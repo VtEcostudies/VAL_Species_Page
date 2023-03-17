@@ -19,13 +19,49 @@
     <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+    <!--geotiff attempt to load geoTiffs into Leaflet for species distribution maps. Didn't work.
+    <script src="https://unpkg.com/geotiff@1.0.0-beta.7/dist/geotiff.bundle.js"></script>
+    <script src="https://unpkg.com/plotty@0.4.4/dist/plotty.min.js"></script>
+
+    <script src="leaflet-geotiff-2/dist/leaflet-geotiff.js"></script>
+    <script src="leaflet-geotiff-2/dist/leaflet-geotiff-plotty.js"></script>
+    <script src="leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows.js"></script>
+    -->
+
+    <!--
     <script src="js/moment.min.js"></script>
+-->
+<script src="https://d3js.org/d3.v6.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
     <script type="module" src="js/valSpeciesPage.js"></script>
+    <script type="module" src="js/phenologyHistogram.js"></script>
 
 </head>
+
 <body>
-    <div id="valSpeciesPage">
-    </div> <!-- /container -->
+    <!--
+        <div id="species-distribution" style="width: 800px; height: 600px;"></div>
+    -->
+    <div class="row">
+        <div class="col-lg-3">
+            <label id="speciesByYearLabel">GBIF Observations by Year</label>
+        </div>
+        <div id="speciesCountsByYear" class="col-lg-9">
+        </div>
+    <div class="row">
+        <div class="col-lg-3">
+            <label id="speciesByMonthLabel">GBIF Observations by Month</label>
+        </div>
+        <div id="speciesCountsByMonth" class="col-lg-9">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-3">
+            <label id="speciesPhenoLabel">iNat Phenology</label>
+        </div>
+        <div id="speciesPhenoHisto" class="col-lg-9">
+        </div>
+    </div>
 </body>
 </html>

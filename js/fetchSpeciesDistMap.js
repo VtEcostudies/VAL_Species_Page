@@ -2,10 +2,22 @@
     Fetch a species distribution map file.
 */
 
-import { fetchImgFile } from "./VAL_Web_Utilities/js/commonUtilities";
+import { fetchImgFile } from "./VAL_Web_Utilities/js/commonUtilities.js";
 
-const imgFileUrl = `https://vtatlasoflife.org/species-profiles/`;
+const imgDistFileUrl = `https://vtatlasoflife.org/species_profiles/distributions`;
 
-export async function fetchSpeciesDistMap(taxon=false) {
-    return fetchImgFile(`${imgFileUrl}/${taxon.split(' ').join('_')}.tiff`, 'tiff');
+export async function fetchSpeciesDistMap(taxonName=false) {
+    if (taxonName) {
+        return await fetchImgFile(`${imgDistFileUrl}/${taxonName.split(' ').join('_')}.tif`, 'tiff');
+    } else {
+        console.log(`fetchSpeciesDistMap | No taxonName`);
+        return null;
+    }
+}
+
+export function getImgSource(taxonName=false) {
+    let imgUrl = `${imgDistFileUrl}/${taxonName.split(' ').join('_')}.tif`;
+    imgUrl = `http://localhost:8000/distributions/Zygnematophyceae_Zygnematales_Mesotaeniaceae_netrium_digitus.tif`;
+    console.log(`fetchSpeciesDistMap::getImgSource | `, imgUrl);
+    return imgUrl;
 }

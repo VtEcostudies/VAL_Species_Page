@@ -1,14 +1,23 @@
 import { getOccsByFilters } from './VAL_Web_Utilities/js/fetchGbifOccs.js';
 import { getWikiPage } from './VAL_Web_Utilities/js/wikiPageData.js';
 import { parseCanonicalFromScientific } from './VAL_Web_Utilities/js/commonUtilities.js';
+import { getImgSource, fetchSpeciesDistMap } from './fetchSpeciesDistMap.js';
+import { addDistribution } from './valDistMap.js'
+import { inatFreqHistogram } from './phenologyHistogram.js';
+import { gbifCountsByYear } from './gbifCountsByYear.js'
+import { gbifCountsByMonth } from './gbifCountsByMonth.js'
 
 const objUrlParams = new URLSearchParams(window.location.search);
+const taxonName = objUrlParams.get('taxonName');
+console.log('Query Param taxonName:', taxonName);
+const taxonRank = objUrlParams.get('taxonRank');
+console.log('Query Param taxonRank:', taxonRank);
 const taxonKey = objUrlParams.get('taxonKey');
 console.log('Query Param taxonKey:', taxonKey);
 
-const other = ''; var objOther = {};
+var other = ''; var objOther = {};
 objUrlParams.forEach((val, key) => {
-    if ('taxonKey'!=key) {
+    if ('taxonKey'!=key && 'taxonRank'!=key && 'taxon'!=key) {
       other += `&${key}=${val}`;
       objOther[key] = val;
     }
@@ -163,12 +172,16 @@ async function fillRow(spcKey, objSpc, objRow, rowIdx) {
     }
 }
 
-if (taxonKey) {
-    addTableWait();
-    await addTaxaFromArr(spcs.array);
-    await addTableHead(spcs.cols);
-    await setLabelText(block, dataset, taxonKeys, Object.keys(spcs.array).length);
-    delTableWait();
+if (taxonName) {
+    //addTableWait();
+    //await addTaxaFromArr(spcs.array);
+    //await addTableHead(spcs.cols);
+    //await setLabelText(block, dataset, taxonKeys, Object.keys(spcs.array).length);
+    //delTableWait();
+    //addDistribution(taxonName); //aborted attempt to add species distribution geoTiffs into Leaflet
+    inatFreqHistogram(taxonName);
+    gbifCountsByYear(taxonName);
+    gbifCountsByMonth(taxonName, 'speciesCountsByMonth');
 } else {
-    alert(`Must call with the query parameter 'taxonKey=1234'.`)
+    console.log(`Call page with the query parameter like ?taxonKey=1234, ?taxonName=Rattus rattus.`)
 }
