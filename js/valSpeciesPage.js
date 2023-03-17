@@ -179,9 +179,9 @@ if (taxonName) {
     //await setLabelText(block, dataset, taxonKeys, Object.keys(spcs.array).length);
     //delTableWait();
     //addDistribution(taxonName); //aborted attempt to add species distribution geoTiffs into Leaflet
-    inatFreqHistogram(taxonName);
-    gbifCountsByYear(taxonName);
+    gbifCountsByYear(taxonName, 'speciesCountsByYear');
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth');
+    inatFreqHistogram(taxonName);
 } else {
     console.log(`Call page with the query parameter like ?taxonKey=1234, ?taxonName=Rattus rattus.`)
 }
