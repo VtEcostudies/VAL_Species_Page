@@ -10,9 +10,9 @@ https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus
 
 export async function gbifCountsByYear(taxonName) {
 // set the dimensions and margins of the graph
-const margin = {top: 10, right: 30, bottom: 30, left: 40},
-    width = 800 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+const margin = {top: 10, right: 30, bottom: 30, left: 40};
+const width = 800 - margin.left - margin.right;
+const height = 400 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 const svg = d3.select(`#speciesCountsByYear`)
@@ -55,7 +55,8 @@ try {
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x))
         .selectAll("text")
-            .attr("transform", "translate(-10,0)rotate(-45)")
+            //.attr("transform", "translate(-10,0)rotate(-45)")
+            .attr("transform", "translate(-12,5)rotate(-90)")
             .style("text-anchor", "end");
 
     // Add Y axis
