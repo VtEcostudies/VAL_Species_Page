@@ -27,7 +27,7 @@ if (phenoSelect) {
     });
 }
 */
-export function inatFreqHistogram(taxonName) {
+export function inatFreqHistogram(taxonName, htmlId) {
     let phenoFreqQuery = baseUrl + project + "&taxon_name="+ taxonName + date_field + interval;
     let phenoWeeklyData = [];
 
@@ -46,27 +46,18 @@ export function inatFreqHistogram(taxonName) {
             // add data to global variable
             phenoWeeklyData = data2[0];
 
-            console.log('phenoWeeklyData', phenoWeeklyData, Object.values(phenoWeeklyData));
+            console.log('phenoWeeklyData', phenoWeeklyData); //, Object.values(phenoWeeklyData));
             // Log the data to the console
             // You would do something with both sets of data here
             // console.log(`data2:`, data2);
         })
         .then(() => {
-            makeFreqHistogram ({phenoData: phenoWeeklyData, htmlID: "speciesPhenoHisto"});
+            makeFreqHistogram (phenoWeeklyData, htmlId);
         })
         .catch((error) => {console.log(error);});
 }
 
-function makeFreqHistogram({phenoData=TOOLS,
-    htmlID=null,
-    total_species=1000,
-    lineColor="steelblue",
-    lineWidth=1.5,
-    //width = 450,
-    //height = 450,
-    //margin = 70,
-    spaceSides = 460,
-    spaceTopBot = 460}) {
+function makeFreqHistogram(phenoData, htmlId) {
 
     // Get the total number of observations
     var total_spp_obs = Object.values(phenoData).reduce((weekobs, a) => weekobs + a, 0);
@@ -74,16 +65,17 @@ function makeFreqHistogram({phenoData=TOOLS,
     // Get the probs
     var weekly_probs = Object.values(phenoData).map((week) => { return week/total_spp_obs});
 
-    console.log(`weekProbs: ${weekly_probs}`)
+    //console.log(`weekProbs: ${weekly_probs}`)
     // empty object to store data
     var phenoProcData = [];
 
-    var monthNames = ["Jan", "Feb", "Mar", "Apr","May","Jun","Jul", "Aug", "Sep","Oct", "Nov","Dec"];
+    var monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
     // set up loops
     var pv = Object.keys(phenoData);
 
-    console.log(`pv: ${pv}`)
+    //console.log(`pv: ${pv}`)
+
     for (var key of pv) {
         phenoProcData.push({wk: key,
                         count: phenoData[key],
@@ -92,12 +84,12 @@ function makeFreqHistogram({phenoData=TOOLS,
         )
     };
 
-    console.log(`phenoData:`, phenoData)
+    console.log(`phenoProcData:`, phenoProcData)
     console.log(`Total species obs:`, total_spp_obs);
 
-    var wkProbData = phenoProcData.reduce((obj, item) => Object.assign(obj, { [item.wk]: item.prob }), {});
+    //var wkProbData = phenoProcData.reduce((obj, item) => Object.assign(obj, { [item.wk]: item.prob }), {});
 
-    console.log(`weekly_probs:`, wkProbData);
+    //console.log(`weekly_probs:`, wkProbData);
 
     // set the dimensions and margins of the graph
     const margin = {top: 10, right: 30, bottom: 30, left: 40},
@@ -105,7 +97,7 @@ function makeFreqHistogram({phenoData=TOOLS,
         height = 100 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
-    var svg = d3.select("#" + htmlID)
+    var svg = d3.select("#" + htmlId)
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)

@@ -24,7 +24,7 @@ function MapOverlayAdd(e) {
     console.log('valDistMap::MapOverlayAdd', e);
 }
 
-export async function addDistribution(taxonName) {
+export async function addDistributionLeafletOverlay(taxonName) {
     console.log('valDistMap::addDistribution', taxonName);
     if (!distMap) {
         distMap = await addDistMap();
@@ -53,4 +53,11 @@ export async function addDistribution(taxonName) {
     const windSpeedLayer = L.leafletGeotiff(windSpeedUrl, {
       renderer: plottyRenderer,
     }).addTo(distMap);
+}
+
+export function addDistribution(taxonName, htmlId) {
+    let eleImg = document.getElementById(htmlId);
+    if (eleImg) {
+        eleImg.src = getImgSource(taxonName);
+    }
 }

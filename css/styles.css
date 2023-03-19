@@ -1,0 +1,28 @@
+.speciesStats {
+}
+
+.speciesStatsLabel {
+    display: inline;
+}
+
+.speciesStatsValue {
+    display: inline;
+    font-style: italic;
+}
+
+.speciesStatsBlock {
+    display: block;
+}
+
+.speciesTaxon {
+    font-size: x-large;
+    font-style: italic;
+}
+
+.imageAttrib {
+    font-size: x-small;
+}
+
+.pointer {
+    cursor: pointer;
+}

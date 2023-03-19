@@ -16,8 +16,8 @@ export async function fetchSpeciesDistMap(taxonName=false) {
 }
 
 export function getImgSource(taxonName=false) {
-    let imgUrl = `${imgDistFileUrl}/${taxonName.split(' ').join('_')}.tif`;
-    imgUrl = `http://localhost:8000/distributions/Zygnematophyceae_Zygnematales_Mesotaeniaceae_netrium_digitus.tif`;
+    let imgUrl = `${imgDistFileUrl}/${taxonName.split(' ').join('_')}.png`;
+    //imgUrl = `http://localhost:8000/distributions/Zygnematophyceae_Zygnematales_Mesotaeniaceae_netrium_digitus.tif`;
     console.log(`fetchSpeciesDistMap::getImgSource | `, imgUrl);
     return imgUrl;
 }

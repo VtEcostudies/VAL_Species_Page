@@ -1,13 +1,13 @@
 /*
 GBIF occurrence counts by month:
-https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus%20plexippus&facet=month&facetLimit=129000&limit=0
-https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=false&scientificName=Danaus%20plexippus&facet=month&facetLimit=129000&limit=0
+https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus%20plexippus&facet=month&facetLimit=1200000&limit=0
+https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=false&scientificName=Danaus%20plexippus&facet=month&facetLimit=1200000&limit=0
 */
 
 async function fetchData(taxonName) {
     let urls = [
-        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=${taxonName}&facet=month&facetLimit=129000&limit=0`,
-        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&scientificName=${taxonName}&facet=month&facetLimit=129000&limit=0`
+        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`,
+        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`
         ]
     let enc = encodeURI(urls[0]);
     try {
@@ -37,30 +37,34 @@ async function fetchData(taxonName) {
 
 function fetchAll(taxonName) {
     let urls = [
-        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=${taxonName}&facet=month&facetLimit=129000&limit=0`,
-        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&scientificName=${taxonName}&facet=month&facetLimit=129000&limit=0`
+        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`,
+        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`
         ]
     let all = Promise.all([fetch(encodeURI(urls[0])),fetch(encodeURI(urls[1]))])
         .then(responses => {
-            //console.log(`fetchAll(${taxonName}) RAW RESULT:`, responses);
+            //console.log(`gbifCountsByMonth::fetchAll(${taxonName}) RAW RESULT:`, responses);
             //Convert each response to json object
             return Promise.all(responses.map(async res => {
                 let json = await res.json();
-                console.log(`fetchAll(${taxonName}) JSON RESULT FOR URL:`, res.url, json);
+                console.log(`gbifCountsByMonth::fetchAll(${taxonName}) JSON RESULT FOR URL:`, res.url, json);
                 return json;
             }));
         })
         .then(arrj => {
-            console.log(`fetchAll(${taxonName}) ALL JSON RESULT:`, arrj);
+            console.log(`gbifCountsByMonth::fetchAll(${taxonName}) ALL JSON RESULT:`, arrj);
             let total = 0, max = 0, sum = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}, counts = [];
             arrj.forEach(json => {
                 //console.log('json', json);
                 total += json.count;
-                json.facets[0].counts.map(count => {
-                    let midx = Number(count.name);
-                    sum[midx] += count.count;
-                });
-                //console.log('sum', sum);
+                if (json.facets[0]) {
+                    json.facets[0].counts.map(count => {
+                        let midx = Number(count.name);
+                        sum[midx] += count.count;
+                    });
+                    //console.log('sum', sum);
+                } else {
+                    console.log(`gbifCountsByMonth::fetchAll NO Facets Returned`, json.facets);
+                }
             });
             for (const [key, val] of Object.entries(sum)) {
                 //console.log('sum entries', key, val);
@@ -85,7 +89,7 @@ function fetchAll(taxonName) {
 
 export async function gbifCountsByMonth(taxonName, htmlId) {
     // set the dimensions and margins of the graph
-    const margin = {top: 10, right: 30, bottom: 30, left: 40},
+    const margin = {top: 15, right: 30, bottom: 30, left: 10},
         width = 300 - margin.left - margin.right,
         height = 150 - margin.top - margin.bottom;
 
@@ -133,6 +137,13 @@ export async function gbifCountsByMonth(taxonName, htmlId) {
                 //.attr("height", function(d) { return height - y(d.count/data.total); })
                 .attr("fill", "steelblue")
 
+        svg.append("text")
+            .attr("x", width / 2 )
+            .attr("y", 0)
+            .style("text-anchor", "middle")
+            //.text(`${taxonName} Phenology`)
+            .text(`Phenology`)
+    
         })
         .catch(err => {
             console.log(`ERROR gbifCountsByMonth ERROR: `, err);

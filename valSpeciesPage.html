@@ -28,9 +28,8 @@
     <script src="leaflet-geotiff-2/dist/leaflet-geotiff-vector-arrows.js"></script>
     -->
 
-    <!--
     <script src="js/moment.min.js"></script>
--->
+
 <script src="https://d3js.org/d3.v6.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
@@ -40,28 +39,42 @@
 </head>
 
 <body>
-    <!--
-        <div id="species-distribution" style="width: 800px; height: 600px;"></div>
-    -->
-    <div class="row">
-        <div class="col-lg-3">
-            <label id="speciesByYearLabel">GBIF Observations by Year</label>
-        </div>
-        <div id="speciesCountsByYear" class="col-lg-9">
+    <div class="container">
+        <div class="row justify-content-lg-center">
+            <div class="col-lg-auto">
+                <h2><b>Vermont Atlas of Life Species Profile</b></h2>
+            </div>
         </div>
     <div class="row">
-        <div class="col-lg-3">
-            <label id="speciesByMonthLabel">GBIF Observations by Month</label>
+        <div class="col-lg-4 offset-2" id="divTopStats" class="speciesStats">
+            <label id="taxon" class="speciesStatsValue speciesTaxon"></label>
+            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>S-Rank:</b></label><label id="srank" class="speciesStatsValue"></label></div>
+            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Common Name:</b></label><label id="vName" class="speciesStatsValue"></label></div>
+            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>First VT Record:</b></label><label id="fsRec" class="speciesStatsValue"></label></div>
+            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Last VT Record:</b></label><label id="lsRec" class="speciesStatsValue"></label></div>
+            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Vermont Records:</b></label><label id="vtRec" class="speciesStatsValue"></label></div>
         </div>
-        <div id="speciesCountsByMonth" class="col-lg-9">
+        <div class="col-lg-5 offset-1" id="divTopImage">
+            <img src="" id="iconicImage"/>
+            <label id="iconicImageAttrib" class="imageAttrib"></label>
         </div>
     </div>
+    <hr>
     <div class="row">
-        <div class="col-lg-3">
-            <label id="speciesPhenoLabel">iNat Phenology</label>
-        </div>
-        <div id="speciesPhenoHisto" class="col-lg-9">
+        <div id="speciesCountsByMonth" class="col-lg-4 offset-2"></div>
+    </div>
+    <div class="row">
+        <div id="speciesPhenoHisto" class="col-lg-6"></div>
+    </div>
+    <hr>
+    <div class="row justify-content-lg-center">
+        <div id="speciesCountsByYear" class="col-lg-auto"></div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <img src="" id="speciesDistribution" />
         </div>
     </div>
+</div>
 </body>
 </html>
