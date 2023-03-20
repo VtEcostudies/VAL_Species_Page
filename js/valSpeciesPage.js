@@ -39,7 +39,11 @@ function fillTaxonStats(taxonName) {
     let eleLas = document.getElementById("lsRec");
     let eleVtR = document.getElementById("vtRec");
     eleTax.innerText = `(${taxonName})`;
-    eleSrnk.innerHTML = `<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
+    let htmlWait = `&nbsp<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
+    eleSrnk.innerHTML = htmlWait;
+    eleFrs.innerHTML = htmlWait;
+    eleLas.innerHTML = htmlWait;
+    eleVtR.innerHTML = htmlWait;
     if (eleVern) {eleVern.innerHTML = `<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;}
     getStoredData("sheetSranks")
         .then(sheetSranks => {
