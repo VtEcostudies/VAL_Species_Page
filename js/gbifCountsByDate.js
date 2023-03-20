@@ -18,16 +18,16 @@ function fetchAll(searchTerm) {
         ]
     let all = Promise.all([fetch(encodeURI(urls[0])),fetch(encodeURI(urls[1]))])
         .then(responses => {
-            //console.log(`gbifCountsByDate::fetchAll($searchTerm}) RAW RESULT:`, responses);
+            //console.log(`gbifCountsByDate::fetchAll(${searchTerm}) RAW RESULT:`, responses);
             //Convert each response to json object
             return Promise.all(responses.map(async res => {
                 let json = await res.json();
-                console.log(`gbifCountsByDate::fetchAll($searchTerm}) JSON RESULT FOR URL:`, res.url, json);
+                console.log(`gbifCountsByDate::fetchAll(${searchTerm}) JSON RESULT FOR URL:`, res.url, json);
                 return json;
             }));
         })
         .then(arrj => {
-            //console.log(`gbifCountsByDate::fetchAll($searchTerm}) ALL JSON RESULT:`, arrj);
+            //console.log(`gbifCountsByDate::fetchAll(${searchTerm}) ALL JSON RESULT:`, arrj);
             let total = 0, max = 0, min = 7000000000000, sum = {}, counts = [];
             arrj.forEach(json => {
                 //console.log('json', json);
