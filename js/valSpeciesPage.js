@@ -55,8 +55,8 @@ function fillTaxonStats(taxonName) {
         })
     gbifCountsByDate(taxonName)
         .then(data => {
-            let Frs = (data.min < 7000000000000) ? moment(data.min).format("DD MMM, YYYY") : 'N/A';
-            let Las = (data.max > 0) ? moment(data.max).format("DD MMM, YYYY") : 'N/A';
+            let Frs = (data.min < 7000000000000) ? moment(data.min).format("DD MMM YYYY") : 'N/A';
+            let Las = (data.max > 0) ? moment(data.max).format("DD MMM YYYY") : 'N/A';
             eleFrs.innerHTML = `&nbsp${Frs}`;
             eleLas.innerHTML = `&nbsp${Las}`;
             eleVtR.innerHTML = `&nbsp${nFmt.format(data.total)}`;
