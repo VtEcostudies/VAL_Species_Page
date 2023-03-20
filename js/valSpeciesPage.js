@@ -38,6 +38,7 @@ function fillTaxonStats(taxonName) {
     let eleFrs = document.getElementById("fsRec");
     let eleLas = document.getElementById("lsRec");
     let eleVtR = document.getElementById("vtRec");
+    let eleTxt = document.getElementById("wikiText");
     eleTax.innerText = `(${taxonName})`;
     let htmlWait = `&nbsp<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
     eleSrnk.innerHTML = htmlWait;
@@ -78,6 +79,9 @@ function fillTaxonStats(taxonName) {
                             eleAtt.innerHTML = inat.results[0].default_photo.attribution;
                         }
                     })
+            }
+            if (eleTxt && wik.extract_html) {
+                eleTxt.innerHTML = wik.extract_html;
             }
         })
 }
