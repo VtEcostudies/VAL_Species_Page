@@ -80,7 +80,7 @@ if (taxonName) {
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth');
     //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');
-    //addDistribution(taxonName, 'speciesDistribution');
+    addDistribution(taxonName, 'speciesDistribution');
 } else {
     console.log(`Call page with the query parameter '?taxonName=Rattus norvegicus'`)
 }

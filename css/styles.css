@@ -44,6 +44,10 @@
     font-size: x-small;
 }
 
+.speciesDistribution {
+    width: 100%;
+}
+
 .pointer {
     cursor: pointer;
 }

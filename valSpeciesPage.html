@@ -108,9 +108,9 @@
         <div id="speciesCountsByYear" class="col-lg-auto"></div>
     </div>
     -->
-    <div class="row">
-        <div class="col-lg-6">
-            <img src="" id="speciesDistribution" />
+    <div class="row justify-content-lg-center">
+        <div class="col-lg-auto">
+            <img src="" id="speciesDistribution" class="speciesDistribution"/>
         </div>
     </div>
 </div>
@@ -128,7 +128,9 @@ function openChart(evt, chartName) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
     document.getElementById(chartName).style.display = "block";
-    evt.currentTarget.className += " active";
+    if (evt.currentTarget) {
+        evt.currentTarget.className += " active";
+    }
 }
 $("#phenoTab").click();
 </script>
