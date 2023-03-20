@@ -133,7 +133,7 @@ export async function gbifCountsByMonth(taxonName, htmlId) {
                 .attr("y", function(d) { return y(d.count)/2; }) // divide by 2 pushes axis center up half way
                 //.attr("y", function(d) { return y(d.count/data.total); })
                 .attr("width", x.bandwidth())
-                .attr("height", function(d) { return (height - y(d.count)); })
+                .attr("height", function(d) { return (d.count ? height - y(d.count) : 0); })
                 //.attr("height", function(d) { return height - y(d.count/data.total); })
                 .attr("fill", "steelblue")
 
