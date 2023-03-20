@@ -59,7 +59,7 @@ export async function gbifCountsByYear(taxonName, htmlId) {
     // set dimensions and margins of the graph
     var margin = {top: 15, right: 30, bottom: 30, left: 40};
     var width = 400 - margin.left - margin.right; var minWidth = width; 
-    var height = 400 - margin.top - margin.bottom;
+    var height = 300 - margin.top - margin.bottom;
 
     fetchAll(taxonName)
     .then(data => {
@@ -111,7 +111,7 @@ export async function gbifCountsByYear(taxonName, htmlId) {
             .attr("y", 0)
             .style("text-anchor", "middle")
             //.text(`${taxonName} Observations by Year`)
-            .text(`Observations by Year`)
+            .text(`GBIF Observations by Year`)
     })
     .catch(err => {
         console.log(`ERROR gbifCountsByYear ERROR: `, err);

@@ -27,22 +27,24 @@ objUrlParams.forEach((val, key) => {
   });
 
 function fillTaxonStats(taxonName) {
+    let eleCom = document.getElementById("common");
     let eleTax = document.getElementById("taxon");
-    let eleRank = document.getElementById("srank");
+    let eleSrnk = document.getElementById("srank");
     let eleVern = document.getElementById("vName");
     let eleImg = document.getElementById("iconicImage");
     let eleAtt = document.getElementById("iconicImageAttrib");
     let eleFrs = document.getElementById("fsRec");
     let eleLas = document.getElementById("lsRec");
     let eleVtR = document.getElementById("vtRec");
-    eleTax.innerText = taxonName;
-    eleRank.innerHTML = `<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
-    eleVern.innerHTML = `<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
+    eleTax.innerText = `(${taxonName})`;
+    eleSrnk.innerHTML = `<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
+    if (eleVern) {eleVern.innerHTML = `<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;}
     getStoredData("sheetSranks")
         .then(sheetSranks => {
             let ssr = sheetSranks[taxonName] ? sheetSranks[taxonName] : false;
-            eleRank.innerHTML = '&nbsp' + (ssr ? ssr.S_RANK : 'N/A');
-            eleVern.innerHTML = '&nbsp' + (ssr ? ssr.COMMON_NAME : '{missing}');
+            eleSrnk.innerHTML = '&nbsp' + (ssr ? ssr.S_RANK : 'N/A');
+            if (eleVern) eleVern.innerHTML = '&nbsp' + (ssr ? ssr.COMMON_NAME : '{missing}');
+            if (eleCom) eleCom.innerHTML = (ssr ? ssr.COMMON_NAME : '');
         })
     gbifCountsByDate(taxonName)
         .then(data => {
@@ -74,7 +76,7 @@ function fillTaxonStats(taxonName) {
 
 if (taxonName) {
     fillTaxonStats(taxonName);
-    gbifCountsByDate(taxonName);
+    //gbifCountsByDate(taxonName);
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth');
     //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');

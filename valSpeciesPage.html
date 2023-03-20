@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.min.css" integrity="sha512-KJRB1wUfcipHY35z9dEE+Jqd+pGCuQ2JMZmQPAjwPjXuzz9oL1pZm2cd79vyUgHQxvb9sFQ6f05DIz0IqcG1Jw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css" crossorigin="anonymous">
+
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,300italic,400italic,600,600italic,700,700italic,900,900italic|Sorts+Mill+Goudy:400,400italic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/styles.css">
 
     <!-- Make sure to put Leaflet JS AFTER Leaflet CSS -->
@@ -39,30 +41,65 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="row justify-content-lg-center">
-            <div class="col-lg-auto">
-                <h2><b>Vermont Atlas of Life Species Profile</b></h2>
-            </div>
-        </div>
-    <div class="row">
-        <div class="col-lg-4 offset-2" id="divTopStats" class="speciesStats">
-            <label id="taxon" class="speciesStatsValue speciesTaxon"></label>
-            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>S-Rank:</b></label><label id="srank" class="speciesStatsValue"></label></div>
-            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Common Name:</b></label><label id="vName" class="speciesStatsValue"></label></div>
-            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>First VT Record:</b></label><label id="fsRec" class="speciesStatsValue"></label></div>
-            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Last VT Record:</b></label><label id="lsRec" class="speciesStatsValue"></label></div>
-            <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Vermont Records:</b></label><label id="vtRec" class="speciesStatsValue"></label></div>
-        </div>
-        <div class="col-lg-5 offset-1" id="divTopImage">
-            <img src="" id="iconicImage"/>
-            <label id="iconicImageAttrib" class="imageAttrib"></label>
+    <div class="row topMenu">
+        <div class="col-lg-3">
+            <h3>Vermont Atlas of Life</h3>
         </div>
     </div>
     <hr>
+    <div class="container">
+<!--
+        <div class="row justify-content-lg-center">
+            <div class="col-lg-auto">
+            </div>
+        </div>
+-->
+        <div class="row">
+            <div class="col-lg-6">
+                <label id="common" class="speciesCommon"></label>
+                <label id="taxon" class="speciesTaxon"></label>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-lg-6" id="divTopImage">
+                <img src="" id="iconicImage" class="iconicImage" />
+                <label id="iconicImageAttrib" class="imageAttrib"></label>
+            </div>
+            <div class="col-lg-6">
+                <div class="row">
+                    <div class="col-lg-6" id="divTopStats" class="speciesStats">
+                        <!--
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Common Name:</b></label><label id="vName" class="speciesStatsValue"></label></div>
+                        -->
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>S-Rank:</b></label><label id="srank" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Vermont Records:</b></label><label id="vtRec" class="speciesStatsValue"></label></div>
+                    </div>
+                    <div class="col-lg-6" id="divTopStats" class="speciesStats">
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>First VT Record:</b></label><label id="fsRec" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Last VT Record:</b></label><label id="lsRec" class="speciesStatsValue"></label></div>
+                    </div>
+                        </div>
+                <div class="row taxonDetailBottom">
+                    <div class="col-lg-12 tab">
+                        <button id="phenoTab" class="tablinks" onclick="openChart(event, 'Phenology')">Phenology</button>
+                        <button id="histoTab" class="tablinks" onclick="openChart(event, 'History')">History</button>
+                    </div>
+                    <div id="Phenology" class="tabcontent">
+                        <div id="speciesCountsByMonth" class=""></div>
+                    </div>
+                    <div id="History" class="tabcontent">
+                        <div id="speciesCountsByYear" class=""></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <hr>
+    <!--
     <div class="row">
         <div id="speciesCountsByMonth" class="col-lg-4 offset-2"></div>
     </div>
+
     <div class="row">
         <div id="speciesPhenoHisto" class="col-lg-6"></div>
     </div>
@@ -70,6 +107,7 @@
     <div class="row justify-content-lg-center">
         <div id="speciesCountsByYear" class="col-lg-auto"></div>
     </div>
+    -->
     <div class="row">
         <div class="col-lg-6">
             <img src="" id="speciesDistribution" />
@@ -78,3 +116,19 @@
 </div>
 </body>
 </html>
+<script>
+function openChart(evt, chartName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+        }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+    document.getElementById(chartName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+$("#phenoTab").click();
+</script>

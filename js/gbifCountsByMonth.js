@@ -91,7 +91,7 @@ export async function gbifCountsByMonth(taxonName, htmlId) {
     // set the dimensions and margins of the graph
     const margin = {top: 15, right: 30, bottom: 30, left: 10},
         width = 300 - margin.left - margin.right,
-        height = 150 - margin.top - margin.bottom;
+        height = 300 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
     const svg = d3.select(`#${htmlId}`)
@@ -142,7 +142,7 @@ export async function gbifCountsByMonth(taxonName, htmlId) {
             .attr("y", 0)
             .style("text-anchor", "middle")
             //.text(`${taxonName} Phenology`)
-            .text(`Phenology`)
+            .text(`GBIF Observations by Month`)
     
         })
         .catch(err => {
