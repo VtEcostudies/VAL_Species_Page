@@ -83,8 +83,7 @@ function fillTaxonStats(taxonName) {
 }
 
 if (taxonName) {
-    fillTaxonStats(taxonName);
-    //gbifCountsByDate(taxonName);
+    fillTaxonStats(taxonName); //gbifCountsByDate(taxonName);
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth');
     //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');

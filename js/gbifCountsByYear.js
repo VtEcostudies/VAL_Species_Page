@@ -1,25 +1,38 @@
+import { getGbifTaxonKeyFromName } from "./VAL_Web_Utilities/js/commonUtilities.js";
+
 /*
 GBIF occurrence counts by year:
 https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus%20plexippus&facet=year&facetLimit=1200000&limit=0
 https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=false&scientificName=Danaus%20plexippus&facet=year&facetLimit=1200000&limit=0
 */
-function fetchAll(taxonName) {
+async function fetchAllByKey(taxonKey) {
+    return await fetchAll(`taxonKey=${taxonKey}`);
+}
+async function fetchAllByName(taxonName) {
+    let taxonKey = await getGbifTaxonKeyFromName(taxonName);
+    if (taxonKey) {
+        return await fetchAll(`taxonKey=${taxonKey}`);
+    } else {
+        return await fetchAll(`scientificName=${taxonName}`);
+    }
+}
+function fetchAll(searchTerm) {
     let urls = [
-        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=${taxonName}&facet=year&facetLimit=1200000&limit=0`,
-        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&scientificName=${taxonName}&facet=year&facetLimit=1200000&limit=0`
+        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&${searchTerm}&facet=year&facetLimit=1200000&limit=0`,
+        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&${searchTerm}&facet=year&facetLimit=1200000&limit=0`
         ]
     let all = Promise.all([fetch(encodeURI(urls[0])),fetch(encodeURI(urls[1]))])
         .then(responses => {
-            //console.log(`gbifCountsByYear::fetchAll(${taxonName}) RAW RESULT:`, responses);
+            //console.log(`gbifCountsByYear::fetchAll(${searchTerm}) RAW RESULT:`, responses);
             //Convert each response to json object
             return Promise.all(responses.map(async res => {
                 let json = await res.json();
-                console.log(`gbifCountsByYear::fetchAll(${taxonName}) JSON RESULT FOR URL:`, res.url, json);
+                console.log(`gbifCountsByYear::fetchAll(${searchTerm}) JSON RESULT FOR URL:`, res.url, json);
                 return json;
             }));
         })
         .then(arrj => {
-            //console.log(`gbifCountsByYear::fetchAll(${taxonName}) ALL JSON RESULT:`, arrj);
+            //console.log(`gbifCountsByYear::fetchAll(${searchTerm}) ALL JSON RESULT:`, arrj);
             let total = 0, max = 0, sum={}, counts = [];
             arrj.forEach(json => {
                 //console.log('json', json);
@@ -61,7 +74,7 @@ export async function gbifCountsByYear(taxonName, htmlId) {
     var width = 400 - margin.left - margin.right; var minWidth = width; 
     var height = 300 - margin.top - margin.bottom;
 
-    fetchAll(taxonName)
+    fetchAllByName(taxonName)
     .then(data => {
         console.log(`gbifCountsByYear data`, data);
         width = data.counts.length * 10 - margin.left - margin.right;

@@ -1,3 +1,5 @@
+import { getGbifTaxonKeyFromName } from "./VAL_Web_Utilities/js/commonUtilities.js";
+
 /*
 GBIF occurrence counts by month:
 https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus%20plexippus&facet=month&facetLimit=1200000&limit=0
@@ -35,23 +37,34 @@ async function fetchData(taxonName) {
     }
 }
 
-function fetchAll(taxonName) {
+async function fetchAllByKey(taxonKey) {
+    return await fetchAll(`taxonKey=${taxonKey}`);
+}
+async function fetchAllByName(taxonName) {
+    let taxonKey = await getGbifTaxonKeyFromName(taxonName);    
+    if (taxonKey) {
+        return await fetchAll(`taxonKey=${taxonKey}`);
+    } else {
+        return await fetchAll(`scientificName=${taxonName}`);
+    }
+}
+function fetchAll(searchTerm) {
     let urls = [
-        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`,
-        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`
+        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&${searchTerm}&facet=month&facetLimit=1200000&limit=0`,
+        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&${searchTerm}&facet=month&facetLimit=1200000&limit=0`
         ]
     let all = Promise.all([fetch(encodeURI(urls[0])),fetch(encodeURI(urls[1]))])
         .then(responses => {
-            //console.log(`gbifCountsByMonth::fetchAll(${taxonName}) RAW RESULT:`, responses);
+            //console.log(`gbifCountsByMonth::fetchAll(${searchTerm}) RAW RESULT:`, responses);
             //Convert each response to json object
             return Promise.all(responses.map(async res => {
                 let json = await res.json();
-                console.log(`gbifCountsByMonth::fetchAll(${taxonName}) JSON RESULT FOR URL:`, res.url, json);
+                console.log(`gbifCountsByMonth::fetchAll(${searchTerm}) JSON RESULT FOR URL:`, res.url, json);
                 return json;
             }));
         })
         .then(arrj => {
-            console.log(`gbifCountsByMonth::fetchAll(${taxonName}) ALL JSON RESULT:`, arrj);
+            console.log(`gbifCountsByMonth::fetchAll(${searchTerm}) ALL JSON RESULT:`, arrj);
             let total = 0, max = 0, sum = {1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}, counts = [];
             arrj.forEach(json => {
                 //console.log('json', json);
@@ -101,7 +114,7 @@ export async function gbifCountsByMonth(taxonName, htmlId) {
         .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    fetchAll(taxonName)
+    fetchAllByName(taxonName)
         .then(data => {
 
         // X axis
