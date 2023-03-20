@@ -20,7 +20,7 @@ function fetchAll(taxonName) {
         })
         .then(arrj => {
             //console.log(`gbifCountsByDate::fetchAll(${taxonName}) ALL JSON RESULT:`, arrj);
-            let total = 0, max = 0, min = 3000000000000, sum = {}, counts = [];
+            let total = 0, max = 0, min = 7000000000000, sum = {}, counts = [];
             arrj.forEach(json => {
                 //console.log('json', json);
                 total += json.count;

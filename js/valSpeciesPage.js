@@ -7,6 +7,8 @@ import { getWikiPage } from './VAL_Web_Utilities/js/wikiPageData.js';
 import { gbifCountsByDate } from './gbifCountsByDate.js';
 import { getInatSpecies } from './VAL_Web_Utilities/js/inatSpeciesData.js';
 
+const nFmt = new Intl.NumberFormat();
+
 const gbifVTOccUrl = `https://gbif.org/occurrence/search?gadmGid=USA.46_1&`;
 const valOccUrl = `https://val.vtecostudies.org/gbif-species-explorer`;
 const inatSpeciesUrl = `https://www.inaturalist.org/taxa/search`;
@@ -48,9 +50,11 @@ function fillTaxonStats(taxonName) {
         })
     gbifCountsByDate(taxonName)
         .then(data => {
-            eleFrs.innerHTML = `&nbsp${moment(data.min).format("DD MMM, YYYY")}`;
-            eleLas.innerHTML = `&nbsp${moment(data.max).format("DD MMM, YYYY")}`;
-            eleVtR.innerHTML = `&nbsp${data.total}`;
+            let Frs = (data.min < 7000000000000) ? moment(data.min).format("DD MMM, YYYY") : 'N/A';
+            let Las = (data.max > 0) ? moment(data.max).format("DD MMM, YYYY") : 'N/A';
+            eleFrs.innerHTML = `&nbsp${Frs}`;
+            eleLas.innerHTML = `&nbsp${Las}`;
+            eleVtR.innerHTML = `&nbsp${nFmt.format(data.total)}`;
             //eleVtR.innerHTML = `&nbsp<a href="${valOccUrl}?q=${taxonName}">${data.total}</a>`;
         })
     getWikiPage(taxonName)
