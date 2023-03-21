@@ -3,7 +3,7 @@ import { inatFreqHistogram } from './phenologyHistogram.js';
 import { gbifCountsByYear } from './gbifCountsByYear.js'
 import { gbifCountsByMonth } from './gbifCountsByMonth.js'
 import { getStoredData } from './fetchSpeciesData.js';
-import { getWikiPage } from './VAL_Web_Utilities/js/wikiPageData.js';
+import { getWikiHtmlPage, getWikiPage } from './VAL_Web_Utilities/js/wikiPageData.js';
 import { gbifCountsByDate } from './gbifCountsByDate.js';
 import { getInatSpecies } from './VAL_Web_Utilities/js/inatSpeciesData.js';
 
@@ -42,6 +42,7 @@ async function fillTaxonStats(taxonName) {
     let eleLast = document.getElementById("lsRec");
     let eleRecs = document.getElementById("vtRec");
     let eleWiki = document.getElementById("wikiText");
+    let eleMore = document.getElementById("wikiPageHtml");
     let htmlWait = `&nbsp<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
     eleTaxn.innerText = `(${taxonName})`;
     eleSrnk.innerHTML = htmlWait;
@@ -92,9 +93,37 @@ async function fillTaxonStats(taxonName) {
             eleIucn.innerHTML = `&nbsp${inat.conservation_status.status_name}`;
         }
     }
+    if (eleMore) {
+        const parser = new DOMParser();
+        let more = await getWikiHtmlPage(taxonName);
+        var html = parser.parseFromString(more, 'text/html');
+        //let atags = $('a', html);
+        //console.log(atags);
+        /*
+        for (const [key, val] of Object.entries(atags)) {
+            //tag.href.replace('./', 'https://en.wikipedia.org/wiki/');
+            console.log('key:', key, 'val:', val);
+        }
+        */
+        let atags = html.querySelectorAll('a[href]');
+        atags.forEach((ele,idx) => {
+            if (ele.href.includes('localhost')) {
+                //console.log('before', idx, ele.href);
+                ele.href = ele.href.replace('http://localhost:8000', 'https://en.wikipedia.org/wiki');
+                //console.log('after', idx, ele.href);
+            }
+        })
+        let sects = html.querySelectorAll('section');
+        //console.log(sects);
+        sects.forEach((ele,idx) => {
+            console.log('section', idx, ele);
+        })
+        eleMore.innerHTML = html.body.innerHTML;
+    }
 }
 
 if (taxonName) {
+    let eleMore = document.getElementById("wikiPageHtml");
     fillTaxonStats(taxonName);
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth'); //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');

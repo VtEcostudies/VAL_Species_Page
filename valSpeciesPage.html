@@ -35,8 +35,9 @@
 <script src="https://d3js.org/d3.v6.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
-    <script type="module" src="js/valSpeciesPage.js"></script>
-    <script type="module" src="js/phenologyHistogram.js"></script>
+<script type="text/javascript" src="js/purify.min.js"></script>
+
+<script type="module" src="js/valSpeciesPage.js"></script>
 
 </head>
 
@@ -108,10 +109,10 @@
                 <button id="taxonTab" class="tabLinksBot" onclick="openChart(event, 'Taxon', 'tabContentBot', 'tabLinksBot')">Taxonomy</button>
             </div>
             <div id="Distr" class="tabContentBot">
-                <img id="speciesDistribution" class="speciesDistribution"></img>
+                <img id="speciesDistribution" class="speciesDistribution"/>
             </div>
             <div id="About" class="tabContentBot">
-                <div id="wikiPageData" class=""></div>
+                <div id="wikiPageHtml" class=""></div>
             </div>
             <div id="Taxon" class="tabContentBot">
                 <div id="taxonomicTree" class=""></div>
