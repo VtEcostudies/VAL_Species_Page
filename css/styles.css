@@ -82,7 +82,7 @@
 }
 
 /* Style the tab content */
-.tabcontent {
+.tabContentTop {
   overflow-y: auto;
   display: none;
   padding: 6px 12px;
@@ -90,3 +90,13 @@
   border-top: none;
   height: 100%;
 }
+/* Style the tab content */
+tabContentBot {
+    overflow-y: auto;
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    height: 100%;
+  }
+  

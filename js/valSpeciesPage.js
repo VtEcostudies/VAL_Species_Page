@@ -1,4 +1,4 @@
-import { addDistribution } from './valDistMap.js'
+import { getDistribution } from './valDistMap.js'
 import { inatFreqHistogram } from './phenologyHistogram.js';
 import { gbifCountsByYear } from './gbifCountsByYear.js'
 import { gbifCountsByMonth } from './gbifCountsByMonth.js'
@@ -28,70 +28,77 @@ objUrlParams.forEach((val, key) => {
     }
   });
 
-function fillTaxonStats(taxonName) {
-    let eleCom = document.getElementById("common");
-    let eleTax = document.getElementById("taxon");
+async function fillTaxonStats(taxonName) {
+    let eleComn = document.getElementById("common");
+    let eleTaxn = document.getElementById("taxon");
     let eleSrnk = document.getElementById("srank");
+    let eleSgcn = document.getElementById("sgcn");
+    let eleIucn = document.getElementById("iucn");
+    let eleTndE = document.getElementById("TndE");
     let eleVern = document.getElementById("vName");
-    let eleImg = document.getElementById("iconicImage");
-    let eleAtt = document.getElementById("iconicImageAttrib");
-    let eleFrs = document.getElementById("fsRec");
-    let eleLas = document.getElementById("lsRec");
-    let eleVtR = document.getElementById("vtRec");
-    let eleTxt = document.getElementById("wikiText");
-    eleTax.innerText = `(${taxonName})`;
+    let eleImag = document.getElementById("iconicImage");
+    let eleAttr = document.getElementById("iconicImageAttrib");
+    let eleFrst = document.getElementById("fsRec");
+    let eleLast = document.getElementById("lsRec");
+    let eleRecs = document.getElementById("vtRec");
+    let eleWiki = document.getElementById("wikiText");
     let htmlWait = `&nbsp<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
+    eleTaxn.innerText = `(${taxonName})`;
     eleSrnk.innerHTML = htmlWait;
-    eleFrs.innerHTML = htmlWait;
-    eleLas.innerHTML = htmlWait;
-    eleVtR.innerHTML = htmlWait;
+    eleIucn.innerHTML = htmlWait;
+    eleTndE.innerHTML = htmlWait;
+    eleFrst.innerHTML = htmlWait;
+    eleLast.innerHTML = htmlWait;
+    eleRecs.innerHTML = htmlWait;
     if (eleVern) {eleVern.innerHTML = `<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;}
     getStoredData("sheetSranks")
         .then(sheetSranks => {
             let ssr = sheetSranks[taxonName] ? sheetSranks[taxonName] : false;
             eleSrnk.innerHTML = '&nbsp' + (ssr ? ssr.S_RANK : 'N/A');
-            if (eleVern) eleVern.innerHTML = '&nbsp' + (ssr ? ssr.COMMON_NAME : '{missing}');
-            if (eleCom) eleCom.innerHTML = (ssr ? ssr.COMMON_NAME : '');
+            eleSgcn.innerHTML = (ssr ? (ssr.SGCN ? `&nbsp~&nbsp${ssr.SGCN}` : '') : '');
+            eleTndE.innerHTML = '&nbsp' + (ssr ? (ssr.TandE ? ssr.TandE : 'N/A') : 'N/A');
+            if (eleVern) eleVern.innerHTML = '&nbsp' + (ssr ? ssr.COMMON_NAME : '');
+            if (eleComn) eleComn.innerHTML = (ssr ? ssr.COMMON_NAME : '');
         })
     gbifCountsByDate(taxonName)
         .then(data => {
-            let Frs = (data.min < 7000000000000) ? moment(data.min).format("DD MMM YYYY") : 'N/A';
-            let Las = (data.max > 0) ? moment(data.max).format("DD MMM YYYY") : 'N/A';
-            eleFrs.innerHTML = `&nbsp${Frs}`;
-            eleLas.innerHTML = `&nbsp${Las}`;
-            eleVtR.innerHTML = `&nbsp${nFmt.format(data.total)}`;
-            //eleVtR.innerHTML = `&nbsp<a href="${valOccUrl}?q=${taxonName}">${data.total}</a>`;
+            let Frst = (data.min < 7000000000000) ? moment(data.min).format("DD MMM YYYY") : 'N/A';
+            let Last = (data.max > 0) ? moment(data.max).format("DD MMM YYYY") : 'N/A';
+            eleFrst.innerHTML = `&nbsp${Frst}`;
+            eleLast.innerHTML = `&nbsp${Last}`;
+            eleRecs.innerHTML = `&nbsp${nFmt.format(data.total)}`;
         })
-    getWikiPage(taxonName)
-        .then(wik => {
-            if (wik.thumbnail) {
-                eleImg.src = wik.thumbnail.source;
-                eleImg.addEventListener("click", (e) => {location.assign(wik.content_urls.desktop.page)});
-                eleImg.classList.add("pointer");
-            } else {
-                getInatSpecies(taxonName)
-                    .then(inat => {
-                        if (inat.results[0].name == taxonName) {
-                            eleImg.src = inat.results[0].default_photo.medium_url;
-                            //eleImg.addEventListener("click", (e) => {location.assign(`${inatSpeciesUrl}?q=${taxonName}`)});
-                            eleImg.addEventListener("click", (e) => {location.assign(inat.results[0].wikipedia_url)});
-                            eleImg.classList.add("pointer");
-                            eleAtt.innerHTML = inat.results[0].default_photo.attribution;
-                        }
-                    })
-            }
-            if (eleTxt && wik.extract_html) {
-                eleTxt.innerHTML = wik.extract_html;
-            }
-        })
+    let wiki = await getWikiPage(taxonName);
+    let inat = await getInatSpecies(taxonName);
+    if (eleWiki && wiki.extract_html) {
+        eleWiki.innerHTML = wiki.extract_html;
+    }
+    if (eleImag && wiki.thumbnail) {
+        eleImag.src = wiki.thumbnail.source;
+        eleImag.addEventListener("click", (e) => {location.assign(wiki.content_urls.desktop.page)});
+        eleImag.classList.add("pointer");
+    } else if (eleImag && inat.name == taxonName) {
+        eleImag.src = inat.default_photo.medium_url;
+        eleImag.addEventListener("click", (e) => {location.assign(inat.wikipedia_url)});
+        eleImag.classList.add("pointer");
+        eleAttr.innerHTML = inat.default_photo.attribution;
+    }
+    if (inat.preferred_common_name) {
+        if (eleComn) eleComn.innerHTML = inat.preferred_common_name;
+    }
+    if (eleIucn) {
+        eleIucn.innerHTML = '&nbspN/A';
+        if (inat.conservation_status) {
+            eleIucn.innerHTML = `&nbsp${inat.conservation_status.status_name}`;
+        }
+    }
 }
 
 if (taxonName) {
-    fillTaxonStats(taxonName); //gbifCountsByDate(taxonName);
-    gbifCountsByMonth(taxonName, 'speciesCountsByMonth');
-    //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
+    fillTaxonStats(taxonName);
+    gbifCountsByMonth(taxonName, 'speciesCountsByMonth'); //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');
-    addDistribution(taxonName, 'speciesDistribution');
+    getDistribution(taxonName, 'speciesDistribution');
 } else {
-    console.log(`Call page with the query parameter '?taxonName=Rattus norvegicus'`)
+    console.log(`Call page with one query parameter, a single taxon or binomial 'Genus species' like '?taxonName=Rattus norvegicus'`)
 }

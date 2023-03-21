@@ -90,7 +90,8 @@ export async function gbifCountsByYear(taxonName, htmlId) {
 
         // X axis
         var x = d3.scaleBand()
-            .range([ 0, width ])
+            //.range([ 0, width ])
+            .range([ width, 0 ])
             .domain(data.counts.map(function(d) { return d.name; }))
             .padding(0.2);
             svg.append("g")
@@ -120,7 +121,8 @@ export async function gbifCountsByYear(taxonName, htmlId) {
                 .attr("fill", "#69b3a2")
 
         svg.append("text")
-            .attr("x", width / 2 )
+            //.attr("x", width / 2 )
+            .attr("x", 150 )
             .attr("y", 0)
             .style("text-anchor", "middle")
             //.text(`${taxonName} Observations by Year`)

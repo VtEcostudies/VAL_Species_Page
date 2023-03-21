@@ -24,8 +24,8 @@ function MapOverlayAdd(e) {
     console.log('valDistMap::MapOverlayAdd', e);
 }
 
-export async function addDistributionLeafletOverlay(taxonName) {
-    console.log('valDistMap::addDistribution', taxonName);
+export async function getDistributionLeafletOverlay(taxonName) {
+    console.log('valDistMap::getDistribution', taxonName);
     if (!distMap) {
         distMap = await addDistMap();
     }
@@ -55,7 +55,7 @@ export async function addDistributionLeafletOverlay(taxonName) {
     }).addTo(distMap);
 }
 
-export function addDistribution(taxonName, htmlId) {
+export function getDistribution(taxonName, htmlId) {
     let eleImg = document.getElementById(htmlId);
     if (eleImg) {
         eleImg.src = getImgSource(taxonName);
