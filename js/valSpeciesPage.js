@@ -108,7 +108,7 @@ async function fillTaxonStats(taxonName) {
         atags.forEach((ele,idx) => {
             if (ele.href.includes(url.origin)) {
                 console.log('before', idx, ele.href);
-                ele.href = ele.href.replace(url.origin+rout, 'https://en.wikipedia.org/wiki');
+                ele.href = ele.href.replace(url.origin+rout, 'https://en.wikipedia.org/wiki/');
                 console.log('after', idx, ele.href);
             }
         })
