@@ -99,12 +99,11 @@ async function fillTaxonStats(taxonName) {
         let more = await getWikiHtmlPage(taxonName);
         var html = parser.parseFromString(more, 'text/html');
         let url = new URL(document.URL);
-        let ori = url.origin;
-        console.log('URL origin:', ori);
-
-        let atags = html.querySelectorAll('a[href]');
+        console.log('URL origin:', url.origin);
+        console.log('URL pathname:', url.pathname);
+        let atags = html.querySelectorAll('a');
         atags.forEach((ele,idx) => {
-            if (ele.href.includes('localhost')) {
+            if (ele.href.includes(url.origin)) {
                 console.log('before', idx, ele.href);
                 ele.href = ele.href.replace(url.origin, 'https://en.wikipedia.org/wiki');
                 console.log('after', idx, ele.href);
@@ -117,12 +116,12 @@ async function fillTaxonStats(taxonName) {
         let row3Col1 = document.getElementById("wikiPageRow3Col1");
         //console.log(sections);
         sections.forEach((ele,idx) => {
-            console.log('section', idx, ele);
+            //console.log('section', idx, ele);
             if (0==idx) {
                 let ptags = ele.querySelectorAll('p');
-                console.log('<p> tags in first section:', ptags);
+                //console.log('<p> tags in first section:', ptags);
                 ptags.forEach(ptag => {
-                    console.log('remove ptag:', ptag);
+                    //console.log('remove ptag:', ptag);
                     ptag.remove();
                 })
                 row2Col2.appendChild(ele);
