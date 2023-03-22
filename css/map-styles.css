@@ -1,0 +1,314 @@
+/* Resize the dataTables drop-down box to fit number and down-arrow */
+#speciesListTable_wrapper #speciesListTable_length select {
+  width: 50%;
+}
+
+.layerControlItem { 
+  display: inline; /* This inlines Leaflet's layer control items when they have grouped html elements, not just text. */
+}
+.triangle-button { /* only way I could find to move 2x icon/text up was to go absolute. */
+  position: absolute;
+  left: 5px;
+  transform: translateY(-15px);
+}
+.fa {
+  padding-right: 3px;
+}
+.fa-circle { /*aka round*/
+  color: greenyellow;
+}
+.fa-square {
+  color: red;
+}
+.fa-caret-up { /*aka triangle*/
+  color: cyan;
+  transform: translateY(6px); /* caret-up fa-2x doubles button's text height, pushing vertical location downward... */
+}
+.fa-diamond {
+  color: blue;
+}
+
+.black {
+  color: black;
+}
+.white {
+  color: white;
+}
+
+.red {
+  color: red;
+}
+.blue {
+  color: blue;
+}
+.green {
+  color: green;
+}
+.yellow {
+  color: yellow;
+}
+.orange {
+  color: orange;
+}
+.purple {
+  color: purple;
+}
+.cyan {
+  color: cyan;
+}
+.grey {
+  color: grey;
+}
+.violet {
+  color: violet;
+}
+.greenyellow {
+  color: greenyellow;
+}
+
+.bg-red {
+  background-color: red;
+}
+.bg-blue {
+  background-color: blue;
+}
+.bg-green {
+  background-color: green;
+}
+.bg-yellow {
+  background-color: yellow;
+}
+.bg-orange {
+  background-color: orange;
+}
+.bg-purple {
+  background-color: purple;
+}
+.bg-cyan {
+  background-color: cyan;
+}
+.bg-grey {
+  background-color: grey;
+}
+.bg-violet {
+  background-color: violet;
+}
+.bg-greenyellow {
+  background-color: greenyellow;
+}
+
+.cluster-count {
+  width: 30px;
+  height: 30px;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.round-shape {
+  height: 10px;
+  width: 10px;
+  /*background-color: greenyellow;*/
+  border-radius: 50%;
+  border-color: black;
+  border-style: solid;
+  border-width: 2px;
+}
+.round-small {
+  height: 5px;
+  width: 5px;
+  background-color: greenyellow;
+  border-radius: 50%;
+  border-color: black;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.square-shape {
+  height: 30px;
+  width: 30px;
+  /*background-color: red;*/
+  border-radius: 0%;
+  border-color: black;
+  border-style: solid;
+  border-width: 2px;
+}
+.square-small {
+  height: 5px;
+  width: 5px;
+  background-color: red;
+  border-radius: 0%;
+  border-color: black;
+  border-style: solid;
+  border-width: 1px;
+}
+
+/*https://stackoverflow.com/questions/7073484/how-do-css-triangles-work*/
+.triangle-shape {
+  -webkit-clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  /*background: red; remove this to override with color class*/
+  width: 100px;
+  height: 100px;
+}
+.triangle-count {
+  width: 30px;
+  height: 30px;
+  display: table-cell;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  transform: translate(0px, 15px) /* translate(right, down) */
+}
+
+.triangle-shape-old {
+	width: 0;
+	height: 0;
+  /*background-color: cyan; this makes a square*/
+  /*border-color: cyan; this doesn't work*/
+	border-left: 20px solid transparent;
+	border-right: 20px solid transparent;
+	/*border-bottom: 30px solid cyan;*/
+  text-align: left;
+  align-content: baseline;
+}
+.triangle-count-old {
+  width: 30px;
+  height: 30px;
+  display: table-cell;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  transform: translate(-10px, 15px)
+}
+.triangle-small-old {
+	width: 0;
+	height: 0;
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
+	border-bottom: 12px solid cyan;
+  text-align: left;
+  align-content: baseline;
+}
+
+.diamond-shape {
+  /*background-color: blue;*/
+  height: 30px;
+	width: 30px;
+  text-align: center;
+  transform: rotate(45deg);
+}
+.diamond-count {
+  /*color: yellow;*/
+  display: table-cell;
+  height: 30px;
+	width: 30px;
+  transform: rotate(-45deg);
+  vertical-align: middle;
+  font-weight: bold;
+}
+.diamond-small {
+  /*background-color: blue;*/
+  height: 10px;
+	width: 10px;
+  text-align: center;
+  transform: rotate(45deg);
+}
+
+html, body, #mapid, .row-fluid{
+  height: 100%;
+}
+
+#map-wrapper {
+  width: 100%;
+  height: 600px;
+  position: relative;
+}
+
+#mapid {
+  width: 100%;
+  height: 100%;
+}
+
+#btn-wrapper {
+  position: absolute;
+  z-index: 10000;
+  top: 3px;
+  left: 3px;
+}
+
+.map-button {
+  display: block;
+  position: relative;
+  z-index: 10000;
+  margin-top: 5px;
+  margin-left: 5px;
+  height: 30px;
+  min-width: 115px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.map-button:active, .button-active {
+  transform: translate(2px, 0px);
+  background-color: green;
+  color: yellow;
+}
+
+#lbl-wrapper {
+  position: absolute;
+  z-index: 10000;
+  top: 3px;
+  right: 3px;
+  text-align: right;
+}
+
+.map-label {
+  display: block;
+  color: blue;
+}
+
+#wait-overlay {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 90000;
+  background-color:grey;
+  opacity: 50%;
+  text-align: center;
+  vertical-align: center;
+}
+
+#wait-icon {
+  display: inline-block;
+  margin-top: 200px;
+  color: blue;
+}
+
+#speciesListTitle {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#speciesListLabel {
+  display: inline;
+  margin-left: 10px;
+  text-decoration: underline;
+}
+
+#gbifLink {
+  display: inline;
+  margin-left: 10px;
+}
+
+/* Both of these work to apply underline to just table header cells: */
+thead > tr > td {
+  text-decoration: underline;
+}
+thead tr td {
+  text-decoration: underline;
+}

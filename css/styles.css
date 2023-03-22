@@ -100,4 +100,13 @@
     border: 1px solid #000;
     border-top: none;
     height: 100%;
+    margin-bottom: 50px;
+  }
+
+  .wikiSidebar {
+    padding-top: 50px;
+  }
+
+  .occMap {
+    min-height: 750px;
   }

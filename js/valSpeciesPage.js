@@ -6,6 +6,7 @@ import { getStoredData } from './fetchSpeciesData.js';
 import { getWikiHtmlPage, getWikiPage } from './VAL_Web_Utilities/js/wikiPageData.js';
 import { gbifCountsByDate } from './gbifCountsByDate.js';
 import { getInatSpecies } from './VAL_Web_Utilities/js/inatSpeciesData.js';
+import { loadSpeciesMap } from './valSpeciesMap.js';
 
 const nFmt = new Intl.NumberFormat();
 
@@ -97,14 +98,6 @@ async function fillTaxonStats(taxonName) {
         const parser = new DOMParser();
         let more = await getWikiHtmlPage(taxonName);
         var html = parser.parseFromString(more, 'text/html');
-        //let atags = $('a', html);
-        //console.log(atags);
-        /*
-        for (const [key, val] of Object.entries(atags)) {
-            //tag.href.replace('./', 'https://en.wikipedia.org/wiki/');
-            console.log('key:', key, 'val:', val);
-        }
-        */
         let url = new URL(document.URL);
         let ori = url.origin;
         console.log('URL origin:', ori);
@@ -112,26 +105,49 @@ async function fillTaxonStats(taxonName) {
         let atags = html.querySelectorAll('a[href]');
         atags.forEach((ele,idx) => {
             if (ele.href.includes('localhost')) {
-                //console.log('before', idx, ele.href);
+                console.log('before', idx, ele.href);
                 ele.href = ele.href.replace(url.origin, 'https://en.wikipedia.org/wiki');
-                //console.log('after', idx, ele.href);
+                console.log('after', idx, ele.href);
             }
         })
-        let sects = html.querySelectorAll('section');
-        //console.log(sects);
-        sects.forEach((ele,idx) => {
+        let sections = html.querySelectorAll('section');
+        let row1Col1 = document.getElementById("wikiPageRow1Col1");
+        let row2Col1 = document.getElementById("wikiPageRow2Col1");
+        let row2Col2 = document.getElementById("wikiPageRow2Col2");
+        let row3Col1 = document.getElementById("wikiPageRow3Col1");
+        //console.log(sections);
+        sections.forEach((ele,idx) => {
             console.log('section', idx, ele);
+            if (0==idx) {
+                let ptags = ele.querySelectorAll('p');
+                console.log('<p> tags in first section:', ptags);
+                ptags.forEach(ptag => {
+                    console.log('remove ptag:', ptag);
+                    ptag.remove();
+                })
+                row2Col2.appendChild(ele);
+            }
+            /*
+            if (1==idx) {
+                row1Col1.appendChild(ele);
+            }
+            */
+            if (1<=idx && 4>=idx) {
+                row2Col1.appendChild(ele);
+            }
+            if (5<=idx) {
+                row3Col1.appendChild(ele);
+            }
         })
-        eleMore.innerHTML = html.body.innerHTML;
     }
 }
 
 if (taxonName) {
-    let eleMore = document.getElementById("wikiPageHtml");
     fillTaxonStats(taxonName);
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth'); //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');
     getDistribution(taxonName, 'speciesDistribution');
+    loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`);
 } else {
-    console.log(`Call page with one query parameter, a single taxon or binomial 'Genus species' like '?taxonName=Rattus norvegicus'`)
+    console.log(`Call page with one query parameter, a single taxon, ' or binomial 'Genus species' like '?taxonName=Rattus norvegicus'`)
 }
