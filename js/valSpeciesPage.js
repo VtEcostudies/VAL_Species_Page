@@ -147,7 +147,7 @@ if (taxonName) {
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth'); //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');
     getDistribution(taxonName, 'speciesDistribution');
-    loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`);
+    //loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`);
 } else {
     console.log(`Call page with one query parameter, a single taxon, ' or binomial 'Genus species' like '?taxonName=Rattus norvegicus'`)
 }
