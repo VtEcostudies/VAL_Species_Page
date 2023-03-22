@@ -79,7 +79,7 @@ async function fillTaxonStats(taxonName) {
         eleImag.src = wiki.thumbnail.source;
         eleImag.addEventListener("click", (e) => {location.assign(wiki.content_urls.desktop.page)});
         eleImag.classList.add("pointer");
-    } else if (eleImag && inat.name == taxonName) {
+    } else if (eleImag && inat.name == taxonName && inat.default_photo) {
         eleImag.src = inat.default_photo.medium_url;
         eleImag.addEventListener("click", (e) => {location.assign(inat.wikipedia_url)});
         eleImag.classList.add("pointer");
