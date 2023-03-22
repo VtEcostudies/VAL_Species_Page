@@ -119,6 +119,7 @@ async function fillTaxonStats(taxonName) {
         let row2Col1 = document.getElementById("wikiPageRow2Col1");
         let row2Col2 = document.getElementById("wikiPageRow2Col2");
         let row3Col1 = document.getElementById("wikiPageRow3Col1");
+        let rowLast1 = document.getElementById("wikiPageRowLastCol1");
         //console.log(sections);
         sections.forEach((ele,idx) => {
             //console.log('section', idx, ele);
@@ -143,6 +144,10 @@ async function fillTaxonStats(taxonName) {
                 row3Col1.appendChild(ele);
             }
         })
+        rowLast1.innerHTML = `
+            This article includes material from the Wikipedia article "${taxonName}", 
+            which is released under the Creative Commons Attribution-Share-Alike License 3.0. 
+            `;
     }
 }
 
