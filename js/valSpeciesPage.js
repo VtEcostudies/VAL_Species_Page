@@ -105,11 +105,15 @@ async function fillTaxonStats(taxonName) {
             console.log('key:', key, 'val:', val);
         }
         */
+        let url = new URL(document.URL);
+        let ori = url.origin;
+        console.log('URL origin:', ori);
+
         let atags = html.querySelectorAll('a[href]');
         atags.forEach((ele,idx) => {
             if (ele.href.includes('localhost')) {
                 //console.log('before', idx, ele.href);
-                ele.href = ele.href.replace('http://localhost:8000', 'https://en.wikipedia.org/wiki');
+                ele.href = ele.href.replace(url.origin, 'https://en.wikipedia.org/wiki');
                 //console.log('after', idx, ele.href);
             }
         })
