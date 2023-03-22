@@ -1,5 +1,5 @@
 import { getDistribution } from './valDistMap.js'
-import { inatFreqHistogram } from './phenologyHistogram.js';
+import { inatFreqHistogram } from './inatPhenologyHistogram.js';
 import { gbifCountsByYear } from './gbifCountsByYear.js'
 import { gbifCountsByMonth } from './gbifCountsByMonth.js'
 import { getStoredData } from './fetchSpeciesData.js';
@@ -7,6 +7,7 @@ import { getWikiHtmlPage, getWikiPage } from './VAL_Web_Utilities/js/wikiPageDat
 import { gbifCountsByDate } from './gbifCountsByDate.js';
 import { getInatSpecies } from './VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
+import { inatTaxonObsDonut } from './inatTaxonObservationDonut.js'
 
 const nFmt = new Intl.NumberFormat();
 
@@ -104,12 +105,13 @@ async function fillTaxonStats(taxonName) {
         let path = url.pathname.split('/');
         delete path[path.length-1];
         let rout = path.join('/');
+        console.log('URL route:', rout);
         let atags = html.querySelectorAll('a');
         atags.forEach((ele,idx) => {
             if (ele.href.includes(url.origin)) {
-                console.log('before', idx, ele.href);
+                //console.log('before', idx, ele.href);
                 ele.href = ele.href.replace(url.origin+rout, 'https://en.wikipedia.org/wiki/');
-                console.log('after', idx, ele.href);
+                //console.log('after', idx, ele.href);
             }
         })
         let sections = html.querySelectorAll('section');
@@ -150,6 +152,7 @@ if (taxonName) {
     gbifCountsByYear(taxonName, 'speciesCountsByYear');
     getDistribution(taxonName, 'speciesDistribution');
     //loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`);
+   inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut')
 } else {
     console.log(`Call page with one query parameter, a single taxon, ' or binomial 'Genus species' like '?taxonName=Rattus norvegicus'`)
 }

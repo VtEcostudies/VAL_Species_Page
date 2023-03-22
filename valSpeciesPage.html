@@ -37,12 +37,12 @@
 
     <script src="js/moment.min.js"></script>
 
-<script src="https://d3js.org/d3.v6.js"></script>
-<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
-<script type="text/javascript" src="js/purify.min.js"></script>
+    <script type="text/javascript" src="js/purify.min.js"></script>
 
-<script type="module" src="js/valSpeciesPage.js"></script>
+    <script type="module" src="js/valSpeciesPage.js"></script>
 
 </head>
 
@@ -90,12 +90,16 @@
                     <div class="col-lg-12 tab">
                         <button id="phenoTab" class="tabLinksTop" onclick="openChart(event, 'Phenology', 'tabContentTop', 'tabLinksTop')">Phenology</button>
                         <button id="histoTab" class="tabLinksTop" onclick="openChart(event, 'History', 'tabContentTop', 'tabLinksTop')">History</button>
+                        <button id="obsIdTab" class="tabLinksTop" onclick="openChart(event, 'NeedsId', 'tabContentTop', 'tabLinksTop')">iNaturalist</button>
                     </div>
                     <div id="Phenology" class="tabContentTop">
                         <div id="speciesCountsByMonth" class=""></div>
                     </div>
                     <div id="History" class="tabContentTop">
                         <div id="speciesCountsByYear" class=""></div>
+                    </div>
+                    <div id="NeedsId" class="tabContentTop">
+                        <div id="inatTaxonObsDonut" class=""></div>
                     </div>
                 </div>
             </div>

@@ -2,31 +2,7 @@ var baseUrl = 'https://api.inaturalist.org/v1/observations/histogram?';
 var project = '&project_id=vermont-atlas-of-life';
 var interval = '&interval=week_of_year';
 var date_field = '&date_field=observed';
-/*
-var selectPhenologyArray = [
-    {"text":"Select a taxon","value":false,"selected":true},
-    {"text":"Moose","value":"Alces alces"},
-    {"text":"Monarch Butterfly","value":"Danaus plexippus"},
-    {"text":"Common Green Darner","value":"Anax junius"},
-    {"text":"Cabbage White Butterfly","value":"Pieris rapae"},
-    {"text":"Eastern Gray Squirrel","value":"Sciurus carolinensis"}
-]
 
-let phenoSelect = document.getElementById('phenoSelect');
-if (phenoSelect) {
-    for(var i = 0, l = selectPhenologyArray.length; i < l; i++) {
-        var option = selectPhenologyArray[i];
-        phenoSelect.options.add( new Option(option.text, option.value, option.selected) );
-    }
-    phenoSelect.addEventListener("change", () => {
-        let selectedTaxon = phenoSelect.options[phenoSelect.selectedIndex].value;
-
-        console.log(`selected taxa: ${selectedTaxon}`)
-        
-        inatFreqHistogram(selectedTaxon);
-    });
-}
-*/
 export function inatFreqHistogram(taxonName, htmlId) {
     let phenoFreqQuery = baseUrl + project + "&taxon_name="+ taxonName + date_field + interval;
     let phenoWeeklyData = [];
