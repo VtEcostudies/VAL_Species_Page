@@ -101,11 +101,14 @@ async function fillTaxonStats(taxonName) {
         let url = new URL(document.URL);
         console.log('URL origin:', url.origin);
         console.log('URL pathname:', url.pathname);
+        let path = url.pathname.split('/');
+        delete path[path.length-1];
+        let rout = path.join('/');
         let atags = html.querySelectorAll('a');
         atags.forEach((ele,idx) => {
             if (ele.href.includes(url.origin)) {
                 console.log('before', idx, ele.href);
-                ele.href = ele.href.replace(url.origin, 'https://en.wikipedia.org/wiki');
+                ele.href = ele.href.replace(url.origin+rout, 'https://en.wikipedia.org/wiki');
                 console.log('after', idx, ele.href);
             }
         })
