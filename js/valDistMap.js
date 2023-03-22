@@ -59,5 +59,9 @@ export function getDistribution(taxonName, htmlId) {
     let eleImg = document.getElementById(htmlId);
     if (eleImg) {
         eleImg.src = getImgSource(taxonName);
+        eleImg.onerror = (err) => {
+            console.log(`ERROR getDistribution ERROR`, err);
+            eleImg.alt = `Occurrence data is inadequate to generate Suitability/Distribution maps for "${taxonName}".`;
+        }
     }
 }
