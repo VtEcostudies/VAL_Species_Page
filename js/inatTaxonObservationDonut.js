@@ -138,12 +138,12 @@ function makeDoughNut(idsData, obsData, htmlId, taxonName, commonName=false) {
     .attr('font-size', '4em')
     .attr('y', 20)
     .text(obsData.totalObs.toLocaleString());
-
 /*
   // add taxonName text outside the donut plot
   svg.append("text")
-    .attr("x", -200)
-    .attr("y", 0)
+    .append("text")
+    .attr("x", 0)
+    .attr("y", -60)
     .attr("text-anchor", "middle")
     .style("font-size", "4em")
     .text(commonName ? commonName : taxonName);
