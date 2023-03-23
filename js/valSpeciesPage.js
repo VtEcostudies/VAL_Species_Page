@@ -76,6 +76,10 @@ async function fillTaxonStats(taxonName, wikiName=false) {
     let inat = await getInatSpecies(taxonName);
     if (!wikiName && inat.preferred_common_name) {wikiName = inat.preferred_common_name;}
     let wiki = await getWikiPage(wikiName ? wikiName : taxonName);
+    if (wikiName && !wiki.extract_html) { //sometimes an inat common name fails (eg. Cerma cora). try taxonName.
+        wikiName = false; //remove this bad value for 2nd wiki html page call below.
+        wiki = await getWikiPage(taxonName);
+    }
     if (eleWiki && wiki.extract_html) {
         eleWiki.innerHTML = wiki.extract_html;
     }
