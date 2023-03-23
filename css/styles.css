@@ -4,6 +4,10 @@
     padding-bottom: 10px;
 }
 
+.container {
+    margin-top: 50px;
+}
+
 .speciesStats {
 }
 
@@ -45,7 +49,7 @@
 }
 
 .speciesDistribution {
-    width: 100%;
+    width: 67%;
 }
 
 .pointer {
