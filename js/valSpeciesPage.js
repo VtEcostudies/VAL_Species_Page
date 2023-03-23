@@ -4,15 +4,18 @@ import { gbifCountsByYear } from './gbifCountsByYear.js'
 import { gbifCountsByMonth } from './gbifCountsByMonth.js'
 import { getStoredData } from './fetchSpeciesData.js';
 import { getWikiHtmlPage, getWikiSummary } from './VAL_Web_Utilities/js/wikiPageData.js';
-import { gbifCountsByDate } from './gbifCountsByDate.js';
+import { gbifCountsByDate, gbifCountsByDateByTaxonKey } from './gbifCountsByDate.js';
 import { getInatSpecies } from './VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
-import { inatTaxonObsDonut } from './inatTaxonObservationDonut.js'
+import { inatTaxonObsDonut } from './inatTaxonObservationDonut.js';
+import { getGbifTaxonKeyFromName } from './VAL_Web_Utilities/js/commonUtilities.js';
 
 const nFmt = new Intl.NumberFormat();
 
-const gbifVTOccUrl = `https://gbif.org/occurrence/search?gadmGid=USA.46_1&`;
-const valOccUrl = `https://val.vtecostudies.org/gbif-species-explorer`;
+const gbifGadmVtOccUrl = `https://gbif.org/occurrence/search?gadmGid=USA.46_1&`;
+const gbifStateVtOccUrl = `https://gbif.org/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)`;
+const valSpcExpUrl = `https://val.vtecostudies.org/gbif-species-explorer`;
+const valOccExpUrl = `https://val.vtecostudies.org/gbif-explorer`;
 const inatSpeciesUrl = `https://www.inaturalist.org/taxa/search`;
 const wikiPageUrl = `https://www.wikipedia.org/wiki/`
 
@@ -66,13 +69,23 @@ async function fillTaxonStats(taxonName, wikiName=false) {
             if (eleVern) eleVern.innerHTML = '&nbsp' + (ssr ? ssr.COMMON_NAME : '');
             if (eleComn) eleComn.innerHTML = (ssr ? ssr.COMMON_NAME : '');
         })
-    gbifCountsByDate(taxonName)
-        .then(data => {
-            let Frst = (data.min < 7000000000000) ? moment(data.min).format("DD MMM YYYY") : 'N/A';
-            let Last = (data.max > 0) ? moment(data.max).format("DD MMM YYYY") : 'N/A';
-            eleFrst.innerHTML = `&nbsp${Frst}`;
-            eleLast.innerHTML = `&nbsp${Last}`;
-            eleRecs.innerHTML = `&nbsp${nFmt.format(data.total)}`;
+    //let taxonKey = await getGbifTaxonKeyFromName(taxonName);
+    let taxonKey =  false;
+    getGbifTaxonKeyFromName(taxonName)
+        .then(taxKey => {
+            taxonKey = taxKey; //set this for use elsewhere
+            gbifCountsByDateByTaxonKey(taxonKey)
+                .then(data => {
+                    let Frst = (data.min < 7000000000000) ? moment(data.min).format("DD MMM YYYY") : 'N/A';
+                    let Last = (data.max > 0) ? moment(data.max).format("DD MMM YYYY") : 'N/A';
+                    eleFrst.innerHTML = `&nbsp${Frst}`;
+                    eleLast.innerHTML = `&nbsp${Last}`;
+                    //eleRecs.innerHTML = `&nbsp<a href="${valSpcExpUrl}?q=${taxonName}">${nFmt.format(data.total)}</a>`;
+                    eleRecs.innerHTML = `&nbsp<a href="${valOccExpUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(data.total)}</a>`;
+                })
+        })
+        .catch(err => { //taxonKey for taxonName not found at GBIF!?
+            // here we can call gbifCountsByDate(taxonName) and repeat the sets above. Hm, or we can use async/await to remain DRY.
         })
     let inat = await getInatSpecies(taxonName);
     if (!wikiName && inat.preferred_common_name) {wikiName = inat.preferred_common_name;}
@@ -101,6 +114,7 @@ async function fillTaxonStats(taxonName, wikiName=false) {
     } 
     if (inat.preferred_common_name) {
         console.log('fillTaxonStats | Common Name from inat preferred_common_name:', inat.preferred_common_name);
+        if (eleVern) eleVern.innerHTML = inat.preferred_common_name;
         if (eleComn) eleComn.innerHTML = inat.preferred_common_name;
     }
     if (eleIucn) {

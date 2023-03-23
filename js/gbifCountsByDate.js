@@ -65,6 +65,10 @@ function fetchAll(searchTerm) {
     return all; //this is how it's done. strange errors when not.
 }
 
+export async function gbifCountsByDateByTaxonKey(taxonKey) {
+    return await fetchAllByKey(taxonKey);
+}
+
 export async function gbifCountsByDate(taxonName) {
 
     let taxonKey = await getGbifTaxonKeyFromName(taxonName);
