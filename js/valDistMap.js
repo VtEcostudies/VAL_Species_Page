@@ -61,7 +61,9 @@ export function getDistribution(taxonName, htmlId) {
         eleImg.src = getImgSource(taxonName);
         eleImg.onerror = (err) => {
             console.log(`ERROR getDistribution ERROR`, err);
-            eleImg.alt = `Occurrence data is inadequate to generate Suitability/Distribution maps for "${taxonName}".`;
+            eleImg.alt = `VAL does not host Suitability/Distribution maps for "${taxonName}". 
+            Either the available occurrence data is inadequate to generate them, or the queried
+            name's taxonomic rank is not species.`;
         }
     }
 }

@@ -22,6 +22,8 @@ console.log('Query Param taxonName:', taxonName);
 const taxonKey = objUrlParams.get('taxonKey');
 console.log('Query Param taxonKey:', taxonKey);
 var other = ''; var objOther = {};
+const wikiName = objUrlParams.get('wikiName');
+console.log('Query Param wikiName:', wikiName);
 
 objUrlParams.forEach((val, key) => {
     if ('taxonKey'!=key && 'taxonName'!=key) {
@@ -30,7 +32,7 @@ objUrlParams.forEach((val, key) => {
     }
   });
 
-async function fillTaxonStats(taxonName) {
+async function fillTaxonStats(taxonName, wikiName=false) {
     let eleComn = document.getElementById("common");
     let eleTaxn = document.getElementById("taxon");
     let eleSrnk = document.getElementById("srank");
@@ -71,22 +73,26 @@ async function fillTaxonStats(taxonName) {
             eleLast.innerHTML = `&nbsp${Last}`;
             eleRecs.innerHTML = `&nbsp${nFmt.format(data.total)}`;
         })
-    let wiki = await getWikiPage(taxonName);
     let inat = await getInatSpecies(taxonName);
+    if (!wikiName && inat.preferred_common_name) {wikiName = inat.preferred_common_name;}
+    let wiki = await getWikiPage(wikiName ? wikiName : taxonName);
     if (eleWiki && wiki.extract_html) {
         eleWiki.innerHTML = wiki.extract_html;
     }
-    if (eleImag && wiki.thumbnail) {
-        eleImag.src = wiki.thumbnail.source;
-        eleImag.addEventListener("click", (e) => {location.assign(wiki.content_urls.desktop.page)});
-        eleImag.classList.add("pointer");
-    } else if (eleImag && inat.name == taxonName && inat.default_photo) {
-        eleImag.src = inat.default_photo.medium_url;
-        eleImag.addEventListener("click", (e) => {location.assign(inat.wikipedia_url)});
-        eleImag.classList.add("pointer");
-        eleAttr.innerHTML = inat.default_photo.attribution;
-    }
+    if (eleImag) {
+        if (inat.default_photo) {
+            eleImag.src = inat.default_photo.medium_url;
+            eleImag.addEventListener("click", (e) => {location.assign(inat.wikipedia_url)});
+            eleImag.classList.add("pointer");
+            eleAttr.innerHTML = inat.default_photo.attribution;
+        } else if (wiki.thumbnail) {
+            eleImag.src = wiki.thumbnail.source;
+            eleImag.addEventListener("click", (e) => {location.assign(wiki.content_urls.desktop.page)});
+            eleImag.classList.add("pointer");
+        }
+    } 
     if (inat.preferred_common_name) {
+        console.log('fillTaxonStats | Common Name from inat preferred_common_name:', inat.preferred_common_name);
         if (eleComn) eleComn.innerHTML = inat.preferred_common_name;
     }
     if (eleIucn) {
@@ -96,63 +102,87 @@ async function fillTaxonStats(taxonName) {
         }
     }
     if (eleMore) {
-        const parser = new DOMParser();
-        let more = await getWikiHtmlPage(taxonName);
-        var html = parser.parseFromString(more, 'text/html');
         let url = new URL(document.URL);
         console.log('URL origin:', url.origin);
         console.log('URL pathname:', url.pathname);
         let path = url.pathname.split('/');
-        delete path[path.length-1];
+        delete path[path.length-1]; //remove the terminal html file from pathname to make its URL route
         let rout = path.join('/');
         console.log('URL route:', rout);
-        let atags = html.querySelectorAll('a');
-        atags.forEach((ele,idx) => {
-            if (ele.href.includes(url.origin)) {
-                //console.log('before', idx, ele.href);
-                ele.href = ele.href.replace(url.origin+rout, 'https://en.wikipedia.org/wiki/');
-                //console.log('after', idx, ele.href);
-            }
-        })
-        let sections = html.querySelectorAll('section');
-        let row1Col1 = document.getElementById("wikiPageRow1Col1");
-        let row2Col1 = document.getElementById("wikiPageRow2Col1");
-        let row2Col2 = document.getElementById("wikiPageRow2Col2");
-        let row3Col1 = document.getElementById("wikiPageRow3Col1");
-        let rowLast1 = document.getElementById("wikiPageRowLastCol1");
-        //console.log(sections);
-        sections.forEach((ele,idx) => {
-            //console.log('section', idx, ele);
-            if (0==idx) {
-                let ptags = ele.querySelectorAll('p');
-                //console.log('<p> tags in first section:', ptags);
-                ptags.forEach(ptag => {
-                    //console.log('remove ptag:', ptag);
-                    ptag.remove();
-                })
-                row2Col2.appendChild(ele);
-            }
-            /*
-            if (1==idx) {
+        
+        const parser = new DOMParser();
+        let more = await getWikiHtmlPage(wikiName ? wikiName : taxonName);
+        //console.log(more);
+        var hDom = parser.parseFromString(more, 'text/html');
+        if (more.includes('disambiguation') && more.includes('_disambigbox') && more.includes('dmbox-disambig')) {
+            eleWiki.innerHTML = `Wikipedia search for "${taxonName}" produced ambiguous results.`
+            console.log('*****************WIKIPEDIA DISAMBIGUATION******************');
+            let atags = hDom.querySelectorAll('a');
+            let row1Col1 = document.getElementById("wikiPageRow1Col1");
+            atags.forEach((ele, idx) => {
+                if (ele.href.includes(url.origin)) {
+                    ele.href = ele.href.replace(url.origin + rout, url.origin + url.pathname + `?taxonName=${taxonName}&wikiName=`);
+                }
+            })
+/*
+            let items = hDom.querySelectorAll('li');
+            items.forEach((ele, idx) => {
                 row1Col1.appendChild(ele);
-            }
-            */
-            if (1<=idx && 4>=idx) {
-                row2Col1.appendChild(ele);
-            }
-            if (5<=idx) {
-                row3Col1.appendChild(ele);
-            }
-        })
-        rowLast1.innerHTML = `
-            This article includes material from the Wikipedia article "${taxonName}", 
-            which is released under the Creative Commons Attribution-Share-Alike License 3.0. 
-            `;
+            })
+*/
+            let sections = hDom.querySelectorAll('section');
+            sections.forEach((ele, idx) => {
+                row1Col1.appendChild(ele);
+            })
+        } else {
+            let atags = hDom.querySelectorAll('a');
+            atags.forEach((ele, idx) => {
+                if (ele.href.includes(url.origin)) {
+                    //console.log('before', idx, ele.href);
+                    ele.href = ele.href.replace(url.origin+rout, 'https://en.wikipedia.org/wiki/');
+                    //console.log('after', idx, ele.href);
+                }
+            })
+            let sections = hDom.querySelectorAll('section');
+            let row1Col1 = document.getElementById("wikiPageRow1Col1");
+            let row2Col1 = document.getElementById("wikiPageRow2Col1");
+            let row2Col2 = document.getElementById("wikiPageRow2Col2");
+            let row3Col1 = document.getElementById("wikiPageRow3Col1");
+            let rowLast1 = document.getElementById("wikiPageRowLastCol1");
+            //console.log(sections);
+            sections.forEach((ele,idx) => {
+                //console.log('section', idx, ele);
+                if (0==idx) {
+                    let ptags = ele.querySelectorAll('p');
+                    //console.log('<p> tags in first section:', ptags);
+                    ptags.forEach(ptag => {
+                        //console.log('remove ptag:', ptag);
+                        ptag.remove();
+                    })
+                    row2Col2.appendChild(ele);
+                }
+                /*
+                if (1==idx) {
+                    row1Col1.appendChild(ele);
+                }
+                */
+                if (1<=idx && 4>=idx) {
+                    row2Col1.appendChild(ele);
+                }
+                if (5<=idx) {
+                    row3Col1.appendChild(ele);
+                }
+            })
+            rowLast1.innerHTML = `
+                This article includes material from the Wikipedia article "${taxonName}", 
+                which is released under the Creative Commons Attribution-Share-Alike License 3.0. 
+                `;
+        } //end !ambiguous
     }
 }
 
 if (taxonName) {
-    fillTaxonStats(taxonName);
+    fillTaxonStats(taxonName, wikiName);
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth'); //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');
     getDistribution(taxonName, 'speciesDistribution');
