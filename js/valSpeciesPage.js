@@ -99,16 +99,17 @@ async function fillTaxonStats(taxonName, wikiName=false) {
         eleWiki.innerHTML = wiki.extract_html;
     }
     if (eleImag) {
+        let imagLink = `${valOccExpUrl}?taxonKey=${taxonKey}&view=GALLERY`;
         if (inat.default_photo) {
             let wikiLink = inat.wikipedia_url ? inat.wikipedia_url : `${wikiPageUrl}${wikiName ? wikiName : taxonName}`;
             eleImag.src = inat.default_photo.medium_url;
-            eleImag.addEventListener("click", (e) => {location.assign(wikiLink)});
+            eleImag.addEventListener("click", (e) => {location.assign(imagLink)});
             eleImag.classList.add("pointer");
             eleAttr.innerHTML = inat.default_photo.attribution;
         } else if (wiki.thumbnail) {
             let wikiLink = wiki.content_urls.desktop.page ? wiki.content_urls.desktop.page : `${wikiPageUrl}${wikiName ? wikiName : taxonName}`;
             eleImag.src = wiki.thumbnail.source;
-            eleImag.addEventListener("click", (e) => {location.assign(wikiLink)});
+            eleImag.addEventListener("click", (e) => {location.assign(imagLink)});
             eleImag.classList.add("pointer");
         }
     } 
@@ -200,7 +201,7 @@ async function fillTaxonStats(taxonName, wikiName=false) {
         .catch(err => {
             let wikiLink = `${wikiPageUrl}${wikiName ? wikiName : taxonName}`;
             row1Col1.innerHTML = `No wikipedia page for <i>${wikiName ? wikiName : taxonName}</i>. 
-            Try adding one at <a href="${wikiLink}">${wikiLink}</a>`;
+            You may create one at <a href="${wikiLink}">${wikiLink}</a>`;
         })
     }
 }

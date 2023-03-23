@@ -10,6 +10,8 @@ export function inatTaxonObsDonut(taxonName, htmlId, commonName=false) {
   var lrank = '&lrank=species'
   var rank = '&rank=species'
 
+  var inatLink = `https://www.inaturalist.org/observations/identify?taxon_name=${taxonName}&quality_grade=needs_id`;
+
   console.log('inatTaxonObsDonut | taxonName', taxonName, 'commonName', commonName, 'htmlId', htmlId);
 
   d3.select(htmlId).remove()
