@@ -92,12 +92,10 @@
             <div class="col-lg-auto tab">
                 <button id="distrTab" class="tabLinksBot" onclick="openChart(event, 'Distr', 'tabContentBot', 'tabLinksBot')">Suitability/Distribution</button>
                 <button id="aboutTab" class="tabLinksBot" onclick="openChart(event, 'About', 'tabContentBot', 'tabLinksBot')">About</button>
-                <!--
-                <button id="occMapTab" class="tabLinksBot" onclick="openChart(event, 'occMap', 'tabContentBot', 'tabLinksBot')">Observations</button>
-                -->
             </div>
-            <div id="Distr" class="tabContentBot">
-                <img id="speciesDistribution" class="speciesDistribution"/>
+            <div id="Distr" class="col-lg-auto tabContentBot">
+                <img id="speciesDistribution" class="speciesDistribution center-image"/>
+                <p id="speciesDistMissing" style="display:none;"></p>
             </div>
             <div id="About" class="tabContentBot">
                 <div id="wikiPageHtml" class="">
