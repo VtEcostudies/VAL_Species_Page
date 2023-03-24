@@ -69,24 +69,27 @@ async function fillTaxonStats(taxonName, wikiName=false) {
             if (eleVern) eleVern.innerHTML = '&nbsp' + (ssr ? ssr.COMMON_NAME : '');
             if (eleComn) eleComn.innerHTML = (ssr ? ssr.COMMON_NAME : '');
         })
-    //let taxonKey = await getGbifTaxonKeyFromName(taxonName);
-    let taxonKey =  false;
-    getGbifTaxonKeyFromName(taxonName)
-        .then(taxKey => {
-            taxonKey = taxKey; //set this for use elsewhere
-            gbifCountsByDateByTaxonKey(taxonKey)
-                .then(data => {
-                    let Frst = (data.min < 7000000000000) ? moment(data.min).format("DD MMM YYYY") : 'N/A';
-                    let Last = (data.max > 0) ? moment(data.max).format("DD MMM YYYY") : 'N/A';
-                    eleFrst.innerHTML = `&nbsp${Frst}`;
-                    eleLast.innerHTML = `&nbsp${Last}`;
-                    //eleRecs.innerHTML = `&nbsp<a href="${valSpcExpUrl}?q=${taxonName}">${nFmt.format(data.total)}</a>`;
-                    eleRecs.innerHTML = `&nbsp<a href="${valOccExpUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(data.total)}</a>`;
-                })
+    let taxonKey = getGbifTaxonKeyFromName(taxonName);
+    let gbif = new Promise((resolve,reject) => { //wrap 2 calls in a Promise to pull branching result outside and handle singly, below, with gbif.then...
+        taxonKey.then(taxonKey => {
+            resolve(gbif = gbifCountsByDateByTaxonKey(taxonKey));
+        });
+        taxonKey.catch(err => {
+            resolve(gbif = gbifCountsByDate(taxonName));
+        });
+    });
+    gbif.then(gbif => {
+        let Frst = (gbif.min < 7000000000000) ? moment(gbif.min).format("DD MMM YYYY") : 'N/A';
+        let Last = (gbif.max > 0) ? moment(gbif.max).format("DD MMM YYYY") : 'N/A';
+        eleFrst.innerHTML = `&nbsp${Frst}`;
+        eleLast.innerHTML = `&nbsp${Last}`;
+        taxonKey.then(taxonKey => {
+            eleRecs.innerHTML = `&nbsp<a href="${valOccExpUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(gbif.total)}</a>`;
+        });
+        taxonKey.catch(err => {
+            eleRecs.innerHTML = `&nbsp<a href="${valSpcExpUrl}?q=${taxonName}">${nFmt.format(gbif.total)}</a>`;
         })
-        .catch(err => { //taxonKey for taxonName not found at GBIF!?
-            // here we can call gbifCountsByDate(taxonName) and repeat the sets above. Hm, or we can use async/await to remain DRY.
-        })
+    });
     let inat = await getInatSpecies(taxonName);
     if (!wikiName && inat.preferred_common_name) {wikiName = inat.preferred_common_name;}
     let wiki = await getWikiSummary(wikiName ? wikiName : taxonName);
@@ -99,20 +102,18 @@ async function fillTaxonStats(taxonName, wikiName=false) {
         eleWiki.innerHTML = wiki.extract_html;
     }
     if (eleImag) {
-        let imagLink = `${valOccExpUrl}?taxonKey=${taxonKey}&view=GALLERY`;
-        if (inat.default_photo) {
-            let wikiLink = inat.wikipedia_url ? inat.wikipedia_url : `${wikiPageUrl}${wikiName ? wikiName : taxonName}`;
-            eleImag.src = inat.default_photo.medium_url;
+        taxonKey.then(taxonKey => {
+            let imagLink = `${valOccExpUrl}?taxonKey=${taxonKey}&view=GALLERY`;
             eleImag.addEventListener("click", (e) => {location.assign(imagLink)});
             eleImag.classList.add("pointer");
+        });
+        if (inat.default_photo) {
+            eleImag.src = inat.default_photo.medium_url;
             eleAttr.innerHTML = inat.default_photo.attribution;
         } else if (wiki.thumbnail) {
-            let wikiLink = wiki.content_urls.desktop.page ? wiki.content_urls.desktop.page : `${wikiPageUrl}${wikiName ? wikiName : taxonName}`;
-            eleImag.src = wiki.thumbnail.source;
-            eleImag.addEventListener("click", (e) => {location.assign(imagLink)});
             eleImag.classList.add("pointer");
         }
-    } 
+    }
     if (inat.preferred_common_name) {
         console.log('fillTaxonStats | Common Name from inat preferred_common_name:', inat.preferred_common_name);
         if (eleVern) eleVern.innerHTML = inat.preferred_common_name;

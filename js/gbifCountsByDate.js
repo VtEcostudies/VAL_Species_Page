@@ -50,9 +50,9 @@ function fetchAll(searchTerm) {
                 min = d < min ? d : min;
                 counts.push(o);
             }
-            //console.log('GBIF counts by month sorted by count:', counts);
+            //console.log('GBIF counts by date sorted by count:', counts);
             counts.sort((a,b) => {return a.date > b.date;})
-            //console.log('GBIF counts by month sorted by month:', counts);
+            //console.log('GBIF counts by date sorted by date:', counts);
             //return Promise.resolve({total:total, max:max, counts:counts}); //this works too, but not needed
             return {total:total, max:max, min:min, counts:counts};
         })

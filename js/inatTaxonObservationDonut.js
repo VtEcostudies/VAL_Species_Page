@@ -58,14 +58,14 @@ export function inatTaxonObsDonut(taxonName, htmlId, commonName=false) {
       obsData.totalSpp = data2[4];
     })
     .then(() => {
-      makeDoughNut(idsData, obsData, htmlId, taxonName, commonName);
+      makeDonut(idsData, obsData, htmlId, taxonName, commonName);
     })
     .catch(err => {
       console.log('ERROR inatTaxonObsDonut ERROR', err);
     });
 }
 
-function makeDoughNut(idsData, obsData, htmlId, taxonName, commonName=false) {
+function makeDonut(idsData, obsData, htmlId, taxonName, commonName=false) {
   var width = 300, height = 300, margin = 10;
 
   // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
