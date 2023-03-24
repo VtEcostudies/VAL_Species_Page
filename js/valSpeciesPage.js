@@ -210,7 +210,7 @@ if (taxonName) {
     fillTaxonStats(taxonName, wikiName);
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth'); //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');
-    getDistribution(taxonName, 'speciesDistribution');
+    getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing');
     //loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`);
    inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut')
 } else {

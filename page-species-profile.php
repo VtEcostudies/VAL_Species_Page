@@ -33,8 +33,6 @@
 <script src="/wp-content/themes/val/VAL_Species_Page/js/purify.min.js"></script>
 <script src="/wp-content/themes/val/VAL_Species_Page/js/valSpeciesPage.js" type="module"></script>
 
-<section class="hero">
-
   <div class="container">
         <div class="row">
             <div class="col-lg-6">
@@ -120,8 +118,6 @@
             </div>
         </div>
   </div>
-
-</section>
 
 <?php get_footer(); ?>
 
