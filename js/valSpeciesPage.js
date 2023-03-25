@@ -63,9 +63,10 @@ async function fillTaxonStats(taxonName, wikiName=false) {
     getStoredData("sheetSranks")
         .then(sheetSranks => {
             let ssr = sheetSranks[taxonName] ? sheetSranks[taxonName] : false;
+            let tne = (ssr ? (ssr.TandE ? ssr.TandE : false) : false);
             eleSrnk.innerHTML = '&nbsp' + (ssr ? ssr.S_RANK : 'N/A');
             eleSgcn.innerHTML = (ssr ? (ssr.SGCN ? `&nbsp~&nbsp${ssr.SGCN}` : '') : '');
-            eleTndE.innerHTML = '&nbsp' + (ssr ? (ssr.TandE ? ssr.TandE : 'N/A') : 'N/A');
+            eleTndE.innerHTML = '&nbsp' + (tne ? ('T'==tne ? 'Threatened' : ('E'==tne ? 'Endangered' : 'N/A')) : 'N/A');
             if (eleVern) eleVern.innerHTML = '&nbsp' + (ssr ? ssr.COMMON_NAME : '');
             if (eleComn) eleComn.innerHTML = (ssr ? ssr.COMMON_NAME : '');
         })
@@ -122,7 +123,9 @@ async function fillTaxonStats(taxonName, wikiName=false) {
     if (eleIucn) {
         eleIucn.innerHTML = '&nbspN/A';
         if (inat.conservation_status) {
-            eleIucn.innerHTML = `&nbsp${inat.conservation_status.status_name}`;
+            let iucn = inat.conservation_status.status_name;
+            iucn = iucn.charAt(0).toUpperCase() + iucn.slice(1);
+            eleIucn.innerHTML = `&nbsp${iucn}`;
         }
     }
     if (eleMore) {
@@ -212,8 +215,8 @@ if (taxonName) {
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth'); //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');
     getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing');
+    inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut')
     //loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`);
-   inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut')
 } else {
     console.log(`Call page with one query parameter, a single taxon, ' or binomial 'Genus species' like '?taxonName=Rattus norvegicus'`)
 }
