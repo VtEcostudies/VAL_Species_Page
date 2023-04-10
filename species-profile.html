@@ -102,9 +102,9 @@
             <div class="col-lg-auto tab">
                 <button id="distrTab" class="tabLinksBot" onclick="openChart(event, 'Distr', 'tabContentBot', 'tabLinksBot')">Suitability/Distribution</button>
                 <button id="aboutTab" class="tabLinksBot" onclick="openChart(event, 'About', 'tabContentBot', 'tabLinksBot')">About</button>
-                <!--
+                <!---->
                 <button id="occMapTab" class="tabLinksBot" onclick="openChart(event, 'occMap', 'tabContentBot', 'tabLinksBot')">Observations</button>
-                -->
+                <!---->
             </div>
             <div id="Distr" class="col-lg-auto tabContentBot">
                 <img id="speciesDistribution" class="speciesDistribution center-image"/>
@@ -127,11 +127,11 @@
                     </div>
                 </div>
             </div>
-            <!--
-            <div id="occMap" class="tabContentBot occMap">
+            <!---->
+            <div id="occMap" class="tabContentBot"style="height:600px;width:100%;overflow:hidden;">
                 <button id="zoomVT" class="map-button">Zoom VT</button>
             </div>
-            -->
+            <!---->
         </div>
 <!--
         <div class="row justify-content-lg-center">
@@ -169,4 +169,5 @@ function openChart(evt, chartName, tabContentClass, tabLinkClass) {
 }
 $("#phenoTab").click(); $("#phenoTab").addClass("active");
 $("#aboutTab").click(); $("#aboutTab").addClass("active");
+//$("#occMapTab").click(); $("#occMapTab").addClass("active");
 </script>

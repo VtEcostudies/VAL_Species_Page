@@ -11,11 +11,13 @@ import { inatTaxonObsDonut } from './inatTaxonObservationDonut.js';
 import { getGbifTaxonKeyFromName } from './VAL_Web_Utilities/js/commonUtilities.js';
 
 const nFmt = new Intl.NumberFormat();
+var gbifInfo = false;
 
-const gbifGadmVtOccUrl = `https://gbif.org/occurrence/search?gadmGid=USA.46_1&`;
+const gbifGadmVtOccUrl = `https://gbif.org/occurrence/search?gadmGid=USA.46_1`;
 const gbifStateVtOccUrl = `https://gbif.org/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)`;
 const valSpcExpUrl = `https://val.vtecostudies.org/gbif-species-explorer`;
 const valOccExpUrl = `https://val.vtecostudies.org/gbif-explorer`;
+const vtaOccExpUrl = `https://vtatlasoflife.org/gbif_val/occurrences.html`;
 const inatSpeciesUrl = `https://www.inaturalist.org/taxa/search`;
 const wikiPageUrl = `https://www.wikipedia.org/wiki/`
 
@@ -79,20 +81,37 @@ async function fillTaxonStats(taxonName, wikiName=false) {
             resolve(gbif = gbifCountsByDate(taxonName));
         });
     });
+    gbifInfo = gbif;
     gbif.then(gbif => {
         let Frst = (gbif.min < 7000000000000) ? moment(gbif.min).format("DD MMM YYYY") : 'N/A';
+        let Fmon = (gbif.min < 7000000000000) ? moment(gbif.min).format("M") : false;
+        let Fyer = (gbif.min < 7000000000000) ? moment(gbif.min).format("YYYY") : false;
+        let Fdat = (gbif.min < 7000000000000) ? moment(gbif.min).format("YYYY-MM-DD") : false;
         let Last = (gbif.max > 0) ? moment(gbif.max).format("DD MMM YYYY") : 'N/A';
-        eleFrst.innerHTML = `&nbsp${Frst}`;
-        eleLast.innerHTML = `&nbsp${Last}`;
+        let Lmon = (gbif.max > 0) ? moment(gbif.max).format("M") : false;
+        let Lyer = (gbif.max > 0) ? moment(gbif.max).format("YYYY") : false;
+        let Ldat = (gbif.max > 0) ? moment(gbif.max).format("YYYY-MM-DD") : false;
+        //eleFrst.innerHTML = `&nbsp${Frst}`;
+        //eleLast.innerHTML = `&nbsp${Last}`;
         taxonKey.then(taxonKey => {
             eleRecs.innerHTML = `&nbsp<a href="${valOccExpUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(gbif.total)}</a>`;
+            eleFrst.innerHTML = `&nbsp<a href="${vtaOccExpUrl}?taxonKey=${taxonKey}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+            //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Fdat}">${Frst}</a>`
+            eleLast.innerHTML = `&nbsp<a href="${vtaOccExpUrl}?taxonKey=${taxonKey}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+            //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         });
         taxonKey.catch(err => {
             eleRecs.innerHTML = `&nbsp<a href="${valSpcExpUrl}?q=${taxonName}">${nFmt.format(gbif.total)}</a>`;
+            eleFrst.innerHTML = `&nbsp<a href="${vtaOccExpUrl}?q=${taxonName}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+            //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&q=${taxonName}&event_date=${Fdat}">${Frst}</a>`
+            eleLast.innerHTML = `&nbsp<a href="${vtaOccExpUrl}?q=${taxonName}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+            //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         })
     });
     let inat = await getInatSpecies(taxonName);
-    if (!wikiName && inat.preferred_common_name) {wikiName = inat.preferred_common_name;}
+    if (!wikiName && inat.wikipedia_url) {
+        wikiName = inat.wikipedia_url.split('/').slice(-1);
+    }
     let wiki = await getWikiSummary(wikiName ? wikiName : taxonName);
     if (wikiName && !wiki.extract_html) { //sometimes an inat common name fails (eg. Cerma cora). try taxonName.
         console.log(`fillTaxonStats | getWikiSummary(${wikiName ? wikiName : taxonName}) failed. Trying getWikiSummary(${taxonName}).`)
@@ -145,7 +164,7 @@ async function fillTaxonStats(taxonName, wikiName=false) {
 
         const parser = new DOMParser();
         let more = getWikiHtmlPage(wikiName ? wikiName : taxonName); //without await, async return is a promise
-        console.log(`getTaxonStats::getWikiHtmlPage RESULT`, more.status, more.ok, more); //shows pending, then fulfilled
+        console.log(`getTaxonStats::getWikiHtmlPage(${wikiName ? wikiName : taxonName}) RESULT`, more.status, more.ok, more); //shows pending, then fulfilled
         more.then(more => {
             var hDom = parser.parseFromString(more, 'text/html');
             let ambiguous = more.includes('disambiguation') && more.includes('_disambigbox') && more.includes('dmbox-disambig');
@@ -210,13 +229,30 @@ async function fillTaxonStats(taxonName, wikiName=false) {
     }
 }
 
-if (taxonName) {
+if (taxonName) {   
     fillTaxonStats(taxonName, wikiName);
     gbifCountsByMonth(taxonName, 'speciesCountsByMonth'); //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
     gbifCountsByYear(taxonName, 'speciesCountsByYear');
     getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing');
     inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut')
-    //loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`);
+    gbifInfo.then(info => {
+        if (info.total < 9900) {
+            showObsTab(1);
+            loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`, 'occMap');
+        } else {
+            showObsTab(0);
+            console.log(`Can't load observations. Too many to plot. (${info.total})`);
+        }
+    })
 } else {
-    console.log(`Call page with one query parameter, a single taxon, ' or binomial 'Genus species' like '?taxonName=Rattus norvegicus'`)
+    let qryMsg = `Call page with one query parameter - a single taxon or binomial 'Genus species' like '?taxonName=Rattus norvegicus'` 
+    console.log(qryMsg);
+    alert(qryMsg);
+}
+
+function showObsTab(show=1) {
+    let eleTab = document.getElementById('occMapTab');
+    let eleObs = document.getElementById('occMap');
+    eleTab.style.display = show ? 'block' : 'none';
+    eleObs.style.display = show ? 'block' : 'none';
 }

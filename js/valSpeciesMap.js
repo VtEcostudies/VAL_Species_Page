@@ -45,11 +45,11 @@ var clusterMarkers = false;
 var iconMarkers = false;
 var abortData = false; //make this global so we can abort a data request
 var nameType = 0; //0=scientificName, 1=commonName
-const mapId = 'occMap';
+var mapId = 'valMap';
 
 //for standalone use
 function addMap() {
-    valMap = L.map('occMap', {
+    valMap = L.map(mapId, {
             zoomControl: false, //start with zoom hidden.  this allows us to add it below, in the location where we want it.
             center: vtAltCtr,
             zoom: 8
@@ -497,7 +497,9 @@ async function fetchGbifVtOccsByTaxon(taxonName=false) {
     page = await getOccsByNameAndLocation(off, lim, taxonName, gadm_gid_vt);
     if (page.count > max) {
       abortData = true;
-      alert(`Fetching VT occurrences of '${taxonName}' from the GBIF API has ${fmt.format(page.count)} records, which exceeds the ${fmt.format(max)} record limit. Please choose a smaller data scope.`)
+      let msg = `Fetching VT occurrences of '${taxonName}' from the GBIF API has ${fmt.format(page.count)} records, which exceeds the ${fmt.format(max)} record limit. Please choose a smaller data scope.`;
+      //alert(msg);
+      console.log(msg);
     } else {
       if (0 == off) {cmTotal[taxonName] += page.count;} //set this just once
       updateMap(page.results, taxonName);
@@ -509,7 +511,9 @@ async function fetchGbifVtOccsByTaxon(taxonName=false) {
     page = await getOccsByNameAndLocation(off, lim, taxonName, false, 'vermont', false);
     if (page.count > max) {
       abortData = true;
-      alert(`Fetching VT occurrences of '${taxonName}' from the GBIF API has ${fmt.format(page.count)} records, which exceeds the ${fmt.format(max)} record limit. Please choose a smaller data scope.`)
+      let msg = `Fetching VT occurrences of '${taxonName}' from the GBIF API has ${fmt.format(page.count)} records, which exceeds the ${fmt.format(max)} record limit. Please choose a smaller data scope.`;
+      //alert(msg);
+      console.log(msg);
     } else {
       if (0 == off) {cmTotal[taxonName] += page.count;} //set this just once
       updateMap(page.results, taxonName);
@@ -1123,35 +1127,43 @@ if (document.getElementById("gbifLoadOnOpen")) {
     });
 }
 
-export function loadSpeciesMap(speciesStr) {
+export function loadSpeciesMap(speciesStr, htmlId='valMap') {
 
-  console.log(`loadSpeciesData input string: ${speciesStr}`);
+  console.log(`loadSpeciesData input string: ${speciesStr} for htmlId: ${htmlId}`);
+  mapId = htmlId;
   var speciesObj = {};
   try {
     speciesObj = JSON.parse(speciesStr);
     console.log('species object:', speciesObj)
   } catch(error) {
     console.log('ERROR parsing http arugment', speciesStr, 'as JSON:', error);
-    alert(argMsg);
   }
 
-  initGbifStandalone();
-  valMap.options.minZoom = 7;
-  valMap.options.maxZoom = 17;
-  //if (!boundaryLayerControl) {addBoundaries();}
   if (typeof speciesObj != "object") {
-      alert(argMsg);
+    console.log(argMsg);
   } else {
-      getSpeciesListData(speciesObj);
+    initGbifStandalone();
+    valMap.options.minZoom = 7;
+    valMap.options.maxZoom = 17;
+    //if (!boundaryLayerControl) {addBoundaries();}
+    getSpeciesListData(speciesObj)
   }
 }
+
 /*
- * Add multiple species to map, either passed as an argument or loaded from imported .js file (see top of this file)
+ * Add multiple species to map passed as JSON string parsed to an object.
  *
- * argSpecies or speciesList must be of the form {"species name": "color", "species name": "color", ...}, and the
- * JSON values must be in double quotes.
+ * argSpecies must be of the form 
+ *    
+ * {"species name":"color","species name":"color","taxaBreakout":true}
+ * 
+ * or
+ * 
+ * {"species name":{"shape":"square","color":"blue"},"species name":{"shape":"star","color":"red"},"clusterMarkers":true}
+ * 
+ * JSON values in http query parameters must be in double quotes, not single-quotes, except for BOOLEAN values and numbers.
  */
-function getSpeciesListData(argSpecies = false) {
+async function getSpeciesListData(argSpecies = false) {
 
     cmCount['all'] = 0;
     var i=0;
@@ -1175,7 +1187,7 @@ function getSpeciesListData(argSpecies = false) {
       boundaryLayerControl.setPosition("bottomright");
     }
 
-    //allow an object-value of 'breakout' to set that behavior. use it and delete it.
+    //allow an object-value of 'taxaBreakout' to set that behavior. use it and delete it.
     if (typeof argSpecies.taxaBreakout != 'undefined') {
       taxaBreakout = argSpecies.taxaBreakout;
       delete argSpecies.taxaBreakout;
@@ -1193,14 +1205,14 @@ function getSpeciesListData(argSpecies = false) {
 
     colrIndx = 0;
     shapIndx = 0;
-    Object.keys(argSpecies).forEach(async function(taxonName) {
+    Object.keys(argSpecies).forEach(async taxonName => {
         taxonName = taxonName.trim();
         cmCount[taxonName] = 0;
         cgColor[taxonName] = cgColors[colrIndx];
         cgShape[taxonName] = cgShapes[shapIndx];
         if (typeof argSpecies[taxonName] === 'object') {
           cgColor[taxonName] = argSpecies[taxonName].color; //define circleGroup color for each species mapped
-          cgShape[taxonName] = argSpecies[taxonName].shape; //define circleGroup color for each species mapped
+          cgShape[taxonName] = argSpecies[taxonName].shape; //define circleGroup shape for each species mapped
         } else {
           cgColor[taxonName] = argSpecies[taxonName]; //define group color for each species mapped
           cgShape[taxonName] = cgShapes[i];
@@ -1213,7 +1225,7 @@ function getSpeciesListData(argSpecies = false) {
         }
         cmTotal[taxonName] = 0;
         console.log(`getSpeciesListData: Add species group ${taxonName} as ${colrIndx}:${cgColor[taxonName]} ${shapIndx}:${cgShape[taxonName]}`);
-        await fetchGbifVtOccsByTaxon(taxonName);
+        await fetchGbifVtOccsByTaxon(taxonName)
         i++;
     });
 }

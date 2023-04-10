@@ -127,7 +127,10 @@ header {
   }
 
   .occMap {
+    height: 100%;
+    width: 100%;
     min-height: 750px;
+    min-width: 400px;
   }
 
   .activeTOOL {                                                        /* NEW */
