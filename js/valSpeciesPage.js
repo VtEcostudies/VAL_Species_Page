@@ -9,15 +9,19 @@ import { getInatSpecies } from './VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
 import { inatTaxonObsDonut } from './inatTaxonObservationDonut.js';
 import { getGbifTaxonKeyFromName } from './VAL_Web_Utilities/js/commonUtilities.js';
+import { dataConfig } from './VAL_Web_Utilities/js/gbifDataConfig.js';
 
 const nFmt = new Intl.NumberFormat();
 var gbifInfo = false;
 
 const gbifGadmVtOccUrl = `https://gbif.org/occurrence/search?gadmGid=USA.46_1`;
 const gbifStateVtOccUrl = `https://gbif.org/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)`;
-const valSpcExpUrl = `https://val.vtecostudies.org/gbif-species-explorer`;
-const valOccExpUrl = `https://val.vtecostudies.org/gbif-explorer`;
-const vtaOccExpUrl = `https://vtatlasoflife.org/gbif_val/occurrences.html`;
+//const valSpcExpUrl = `https://val.vtecostudies.org/gbif-species-explorer`;
+//const valOccExpUrl = `https://val.vtecostudies.org/gbif-explorer`;
+const altOccExpUrl = `https://vtatlasoflife.org/VAL_Data_Explorers/occurrences.html`;
+const exploreUrl = dataConfig.exploreUrl;
+const resultsUrl = dataConfig.resultsUrl;
+const profileUrl = dataConfig.profileUrl;
 const inatSpeciesUrl = `https://www.inaturalist.org/taxa/search`;
 const wikiPageUrl = `https://www.wikipedia.org/wiki/`
 
@@ -94,17 +98,17 @@ async function fillTaxonStats(taxonName, wikiName=false) {
         //eleFrst.innerHTML = `&nbsp${Frst}`;
         //eleLast.innerHTML = `&nbsp${Last}`;
         taxonKey.then(taxonKey => {
-            eleRecs.innerHTML = `&nbsp<a href="${valOccExpUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(gbif.total)}</a>`;
-            eleFrst.innerHTML = `&nbsp<a href="${vtaOccExpUrl}?taxonKey=${taxonKey}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+            eleRecs.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(gbif.total)}</a>`;
+            eleFrst.innerHTML = `&nbsp<a href="${altOccExpUrl}?taxonKey=${taxonKey}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
             //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Fdat}">${Frst}</a>`
-            eleLast.innerHTML = `&nbsp<a href="${vtaOccExpUrl}?taxonKey=${taxonKey}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+            eleLast.innerHTML = `&nbsp<a href="${altOccExpUrl}?taxonKey=${taxonKey}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
             //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         });
         taxonKey.catch(err => {
-            eleRecs.innerHTML = `&nbsp<a href="${valSpcExpUrl}?q=${taxonName}">${nFmt.format(gbif.total)}</a>`;
-            eleFrst.innerHTML = `&nbsp<a href="${vtaOccExpUrl}?q=${taxonName}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+            eleRecs.innerHTML = `&nbsp<a href="${resultsUrl}?q=${taxonName}">${nFmt.format(gbif.total)}</a>`;
+            eleFrst.innerHTML = `&nbsp<a href="${altOccExpUrl}?q=${taxonName}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
             //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&q=${taxonName}&event_date=${Fdat}">${Frst}</a>`
-            eleLast.innerHTML = `&nbsp<a href="${vtaOccExpUrl}?q=${taxonName}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+            eleLast.innerHTML = `&nbsp<a href="${altOccExpUrl}?q=${taxonName}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
             //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         })
     });
@@ -123,7 +127,7 @@ async function fillTaxonStats(taxonName, wikiName=false) {
     }
     if (eleImag) {
         taxonKey.then(taxonKey => {
-            let imagLink = `${valOccExpUrl}?taxonKey=${taxonKey}&view=GALLERY`;
+            let imagLink = `${exploreUrl}?taxonKey=${taxonKey}&view=GALLERY`;
             eleImag.addEventListener("click", (e) => {location.assign(imagLink)});
             eleImag.classList.add("pointer");
         });
