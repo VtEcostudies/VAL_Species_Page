@@ -1,4 +1,4 @@
-import { getGbifTaxonKeyFromName } from "./VAL_Web_Utilities/js/commonUtilities.js";
+import { getGbifTaxonKeyFromName } from "../VAL_Web_Utilities/js/commonUtilities.js";
 
 /*
 GBIF occurrence counts by month:

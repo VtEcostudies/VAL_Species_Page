@@ -1,4 +1,4 @@
-import { fetchGoogleSheetData, defaultSheetIds } from "./VAL_Web_Utilities/js/fetchGoogleSheetsData.js";
+import { fetchGoogleSheetData, defaultSheetIds } from "../VAL_Web_Utilities/js/fetchGoogleSheetsData.js";
 
 const Storage = sessionStorage; //localStorage;
 
@@ -58,10 +58,6 @@ export async function getSheetVernaculars(sheetNumber=0) {
         console.log(`getSheetVernaculars(${sheetNumber}) ERROR:`, err);
         return new Error(err)
     }
-}
-
-export async function getGbifVtSpecies(taxonName) {
-    
 }
 
 export async function getSheetSranks(sheetNumber=0) {

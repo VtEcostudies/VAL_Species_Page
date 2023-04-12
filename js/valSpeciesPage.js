@@ -1,15 +1,15 @@
-import { getDistribution } from './valDistMap.js'
+import { getDistribution } from './valDistSuitMap.js'
 import { inatFreqHistogram } from './inatPhenologyHistogram.js';
 import { gbifCountsByYear } from './gbifCountsByYear.js'
 import { gbifCountsByMonth } from './gbifCountsByMonth.js'
 import { getStoredData } from './fetchSpeciesData.js';
-import { getWikiHtmlPage, getWikiSummary } from './VAL_Web_Utilities/js/wikiPageData.js';
+import { getWikiHtmlPage, getWikiSummary } from '../VAL_Web_Utilities/js/wikiPageData.js';
 import { gbifCountsByDate, gbifCountsByDateByTaxonKey } from './gbifCountsByDate.js';
-import { getInatSpecies } from './VAL_Web_Utilities/js/inatSpeciesData.js';
+import { getInatSpecies } from '../VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
 import { inatTaxonObsDonut } from './inatTaxonObservationDonut.js';
-import { getGbifTaxonKeyFromName } from './VAL_Web_Utilities/js/commonUtilities.js';
-import { dataConfig } from './VAL_Web_Utilities/js/gbifDataConfig.js';
+import { getGbifTaxonKeyFromName } from '../VAL_Web_Utilities/js/commonUtilities.js';
+import { dataConfig } from '../VAL_Web_Utilities/js/gbifDataConfig.js';
 
 const nFmt = new Intl.NumberFormat();
 var gbifInfo = false;
