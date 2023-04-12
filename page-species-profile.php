@@ -29,8 +29,8 @@
 <script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
 <script src="https://d3js.org/d3.v6.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-<script src="/wp-content/themes/val/VAL_Species_Page/js/moment.min.js"></script>
-<script src="/wp-content/themes/val/VAL_Species_Page/js/purify.min.js"></script>
+<script src="/wp-content/themes/val/Web_Utilities/js/moment.min.js"></script>
+<script src="/wp-content/themes/val/Web_Utilities/js/purify.min.js"></script>
 <script src="/wp-content/themes/val/VAL_Species_Page/js/valSpeciesPage.js" type="module"></script>
 
   <div class="container">

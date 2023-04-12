@@ -18,7 +18,7 @@ const gbifGadmVtOccUrl = `https://gbif.org/occurrence/search?gadmGid=USA.46_1`;
 const gbifStateVtOccUrl = `https://gbif.org/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)`;
 //const valSpcExpUrl = `https://val.vtecostudies.org/gbif-species-explorer`;
 //const valOccExpUrl = `https://val.vtecostudies.org/gbif-explorer`;
-const altOccExpUrl = `https://vtatlasoflife.org/VAL_Data_Explorers/occurrences.html`;
+//const altOccExpUrl = `https://vtatlasoflife.org/VAL_Data_Explorers/occurrences.html`;
 const exploreUrl = dataConfig.exploreUrl;
 const resultsUrl = dataConfig.resultsUrl;
 const profileUrl = dataConfig.profileUrl;
@@ -88,27 +88,27 @@ async function fillTaxonStats(taxonName, wikiName=false) {
     gbifInfo = gbif;
     gbif.then(gbif => {
         let Frst = (gbif.min < 7000000000000) ? moment(gbif.min).format("DD MMM YYYY") : 'N/A';
-        let Fmon = (gbif.min < 7000000000000) ? moment(gbif.min).format("M") : false;
-        let Fyer = (gbif.min < 7000000000000) ? moment(gbif.min).format("YYYY") : false;
-        let Fdat = (gbif.min < 7000000000000) ? moment(gbif.min).format("YYYY-MM-DD") : false;
+        let Fmon = (gbif.min < 7000000000000) ? moment(gbif.min).format("M") : '';
+        let Fyer = (gbif.min < 7000000000000) ? moment(gbif.min).format("YYYY") : '';
+        let Fdat = (gbif.min < 7000000000000) ? moment(gbif.min).format("YYYY-MM-DD") : '';
         let Last = (gbif.max > 0) ? moment(gbif.max).format("DD MMM YYYY") : 'N/A';
-        let Lmon = (gbif.max > 0) ? moment(gbif.max).format("M") : false;
-        let Lyer = (gbif.max > 0) ? moment(gbif.max).format("YYYY") : false;
-        let Ldat = (gbif.max > 0) ? moment(gbif.max).format("YYYY-MM-DD") : false;
+        let Lmon = (gbif.max > 0) ? moment(gbif.max).format("M") : '';
+        let Lyer = (gbif.max > 0) ? moment(gbif.max).format("YYYY") : '';
+        let Ldat = (gbif.max > 0) ? moment(gbif.max).format("YYYY-MM-DD") : '';
         //eleFrst.innerHTML = `&nbsp${Frst}`;
         //eleLast.innerHTML = `&nbsp${Last}`;
         taxonKey.then(taxonKey => {
             eleRecs.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(gbif.total)}</a>`;
-            eleFrst.innerHTML = `&nbsp<a href="${altOccExpUrl}?taxonKey=${taxonKey}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+            eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
             //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Fdat}">${Frst}</a>`
-            eleLast.innerHTML = `&nbsp<a href="${altOccExpUrl}?taxonKey=${taxonKey}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+            eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
             //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         });
         taxonKey.catch(err => {
             eleRecs.innerHTML = `&nbsp<a href="${resultsUrl}?q=${taxonName}">${nFmt.format(gbif.total)}</a>`;
-            eleFrst.innerHTML = `&nbsp<a href="${altOccExpUrl}?q=${taxonName}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+            eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?q=${taxonName}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
             //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&q=${taxonName}&event_date=${Fdat}">${Frst}</a>`
-            eleLast.innerHTML = `&nbsp<a href="${altOccExpUrl}?q=${taxonName}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+            eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?q=${taxonName}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
             //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         })
     });
