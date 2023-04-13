@@ -15,8 +15,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" crossorigin="anonymous">
 
 <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,300italic,400italic,600,600italic,700,700italic,900,900italic|Sorts+Mill+Goudy:400,400italic' rel='stylesheet' type='text/css'>
-<link href="/wp-content/themes/val/VAL_Species_Page/css/styles.css" rel="stylesheet">
-<link href="/wp-content/themes/val/VAL_Species_Page/css/map-styles.css" rel="stylesheet">
+<link href="/wp-content/themes/val/VAL_Species_Page/css/species-page-styles.css" rel="stylesheet">
+<link href="/wp-content/themes/val/VAL_Species_Page/css/species-map-styles.css" rel="stylesheet">
 
 <!-- Make sure to put Leaflet JS AFTER Leaflet CSS -->
 <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
@@ -29,8 +29,8 @@
 <script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
 <script src="https://d3js.org/d3.v6.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-<script src="/wp-content/themes/val/Web_Utilities/js/moment.min.js"></script>
-<script src="/wp-content/themes/val/Web_Utilities/js/purify.min.js"></script>
+<script src="/wp-content/themes/val/VAL_Web_Utilities/js/moment.min.js"></script>
+<script src="/wp-content/themes/val/VAL_Web_Utilities/js/purify.min.js"></script>
 <script src="/wp-content/themes/val/VAL_Species_Page/js/valSpeciesPage.js" type="module"></script>
 
   <div class="container">
