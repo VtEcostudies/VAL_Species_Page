@@ -65,9 +65,9 @@
                 </div>
                 <div class="row taxonDetailBottom">
                     <div class="col-lg-12 tab">
-                        <button id="phenoTab" class="tabLinksTop" onclick="openChart(event, 'Phenology', 'tabContentTop', 'tabLinksTop')">Phenology</button>
-                        <button id="histoTab" class="tabLinksTop" onclick="openChart(event, 'History', 'tabContentTop', 'tabLinksTop')">History</button>
-                        <button id="obsIdTab" class="tabLinksTop" onclick="openChart(event, 'NeedsId', 'tabContentTop', 'tabLinksTop')">iNaturalist</button>
+                        <button id="phenoTab" class="tabLinksTop" onclick="openTab(event, 'Phenology', 'tabContentTop', 'tabLinksTop')">Phenology</button>
+                        <button id="histoTab" class="tabLinksTop" onclick="openTab(event, 'History', 'tabContentTop', 'tabLinksTop')">History</button>
+                        <button id="obsIdTab" class="tabLinksTop" onclick="openTab(event, 'NeedsId', 'tabContentTop', 'tabLinksTop')">iNaturalist</button>
                     </div>
                     <div id="Phenology" class="tabContentTop">
                         <div id="speciesCountsByMonth" class=""></div>
@@ -90,8 +90,11 @@
         <hr>
         <div class="row otherInfoTabs">
             <div class="col-lg-auto tab">
-                <button id="distrTab" class="tabLinksBot" onclick="openChart(event, 'Distr', 'tabContentBot', 'tabLinksBot')">Suitability/Distribution</button>
-                <button id="aboutTab" class="tabLinksBot" onclick="openChart(event, 'About', 'tabContentBot', 'tabLinksBot')">About</button>
+                <button id="distrTab" class="tabLinksBot" onclick="openTab(event, 'Distr', 'tabContentBot', 'tabLinksBot')">Suitability/Distribution</button>
+                <button id="aboutTab" class="tabLinksBot" onclick="openTab(event, 'About', 'tabContentBot', 'tabLinksBot')">About</button>
+                <!--
+                <button id="occMapTab" class="tabLinksBot" onclick="openTab(event, 'occMap', 'tabContentBot', 'tabLinksBot')">Observations</button>
+                -->
             </div>
             <div id="Distr" class="col-lg-auto tabContentBot">
                 <img id="speciesDistribution" class="speciesDistribution center-image"/>
@@ -114,26 +117,32 @@
                     </div>
                 </div>
             </div>
+            <!--
+            <div id="occMap" class="tabContentBot"style="height:600px;width:100%;overflow:hidden;">
+                <button id="zoomVT" class="map-button">Zoom VT</button>
+            </div>
+            -->
         </div>
   </div>
 
 <?php get_footer(); ?>
 
 <script>
-function openChart(evt, chartName, tabContentClass, tabLinkClass) {
+function openTab(evt, tabEleId, tabContentClass, tabLinkClass) {
     var i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName(tabContentClass); //"tabcontent");
+    tabcontent = document.getElementsByClassName(tabContentClass);
     for (i = 0; i < tabcontent.length; i++) {
         tabcontent[i].style.display = "none";
         }
-    tablinks = document.getElementsByClassName(tabLinkClass);//"tablinks");
+    tablinks = document.getElementsByClassName(tabLinkClass);
     for (i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
-    document.getElementById(chartName).style.display = "block";
+    document.getElementById(tabEleId).style.display = "block";
     if (evt.currentTarget) {
         evt.currentTarget.className += " active";
     }
+    window.dispatchEvent(new Event('resize'));
 }
 $("#phenoTab").click(); $("#phenoTab").addClass("active");
 $("#aboutTab").click(); $("#aboutTab").addClass("active");

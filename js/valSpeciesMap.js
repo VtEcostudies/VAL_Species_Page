@@ -33,13 +33,10 @@ var countyLayer = false;
 var townLayer = false;
 var bioPhysicalLayer = false;
 var geoGroup = false; //geoJson boundary group for ZIndex management
-var testHarness = false;
 var testData = false //flag to enable test data for development and debugging
-var surveyBlocksLady = false; //flag a lady beetle atlas survey block map
-var surveyBlocksEAME = false; //flag an EAME survey block map
 var showAccepted = 0; //flag to show taxa by acceptedScientificName instead of scientificName
 var baseMapDefault = null;
-var gadm_gid_vt = 'USA.46_1';
+var gadmGidVt = 'USA.46_1';
 var taxaBreakout = false; //flag to break sub-taxa into separate layers with counts.
 var clusterMarkers = false;
 var iconMarkers = false;
@@ -155,14 +152,7 @@ async function zoomVT() {
   }
 }
 
-/*
-  Add boundaries to map and control. Converted from KML to geoJSON
-
-  https://github.com/mapbox/leaflet-omnivore (no longer used)
-
-  https://github.com/mapbox/togeojson
-  - togeojson file.kml > file.geojson
- */
+// Add boundaries to map and control.
 async function addBoundaries() {
 
     if (boundaryLayerControl === false) {
@@ -178,15 +168,10 @@ async function addBoundaries() {
   try {
       geoGroup = new L.FeatureGroup();
       addGeoJsonLayer('geojson/Polygon_VT_State_Boundary.geojson', "State", 0, boundaryLayerControl, geoGroup);
-      addGeoJsonLayer('geojson/Polygon_VT_County_Boundaries.geojson', "Counties", 1, boundaryLayerControl, geoGroup, !surveyBlocksLady && !surveyBlocksEAME);
+      addGeoJsonLayer('geojson/Polygon_VT_County_Boundaries.geojson', "Counties", 1, boundaryLayerControl, geoGroup);
       addGeoJsonLayer('geojson/Polygon_VT_Town_Boundaries.geojson', "Towns", 2, boundaryLayerControl, geoGroup);
       addGeoJsonLayer('geojson/Polygon_VT_Biophysical_Regions.geojson', "Biophysical Regions", 3, boundaryLayerControl, geoGroup);
-      if (surveyBlocksLady) {
-        addGeoJsonLayer('geojson/surveyblocksWGS84.geojson', "Survey Blocks - Lady Beetles", 4, boundaryLayerControl, geoGroup, surveyBlocksLady);
-      } else if (surveyBlocksEAME) {
-        addGeoJsonLayer('geojson/EAME_Priority_Blocks.geojson', "Survey Blocks - EAME", 5, boundaryLayerControl, geoGroup, surveyBlocksEAME);
-        //addGeoJsonLayer('geojson/EAME_Hay_Over_10.geojson', "Hay Coverage - EAME", 6, boundaryLayerControl, geoGroup);
-      }
+      addGeoJsonLayer('geojson/surveyblocksWGS84.geojson', "Survey Blocks", 4, boundaryLayerControl, geoGroup);
   } catch(err) {
     geoGroup = false;
     console.log('addBoundaries ERROR', err)
@@ -314,113 +299,19 @@ function onEachFeature(feature, layer) {
         });
         */
     });
-    if (4 == layer.options.id) { //Lady Beetle Survey Blocks
-      if (feature.properties) {
-          var obj = feature.properties;
-          var tips = '';
-          var pops = '';
-          for (var key in obj) {
-            switch(key.substr(key.length - 4).toLowerCase()) { //last 4 characters of property
-              case 'name':
-                tips += `${obj[key]}<br>`;
-                break;
-              case 'type':
-        	      if (obj[key] == 'PRIORITY1') {
-        		      tips = '<b><u>LADY BEETLE SURVEY BLOCK - HIGH PRIORITY</u></b><br>' + tips;
-        	      } else if (obj[key] == 'PRIORITY') {
-                  tips = '<b><u>PRIORITY BLOCK</u></b><br>' + tips;
-                } else if (obj[key] == 'NONPRIOR') {
-                  tips = 'NON-PRIORITY BLOCK<br>' + tips;
-        	      } else {
-        	        tips = `${obj[key]}<br>` + tips;
-        	      }
-                break;
-            }
-            if (feature.properties.BLOCKNAME &&
-              (feature.properties.BLOCK_TYPE=='PRIORITY' || feature.properties.BLOCK_TYPE=='PRIORITY1'))
-            {
-              var name = feature.properties.BLOCKNAME;
-              var link = feature.properties.BLOCKNAME.replace(/( - )|\s+/g,'').toLowerCase();
-              if (feature.properties.BLOCK_TYPE=='PRIORITY1') {
-                pops = `<b><u>LADY BEETLE SURVEY BLOCK - HIGH PRIORITY</u></b></br>`;
-              } else {
-                pops = `<b><u>PRIORITY BLOCK</u></b></br>`;
-              }
-              pops += `<a target="_blank" href="https://s3.us-west-2.amazonaws.com/val.surveyblocks/${link}.pdf">Get ${name} block map</a></br>`;
-              pops += `<a target="_blank" href="https://val.vtecostudies.org/projects/lady-beetle-atlas/signup?surveyblock=${link}">Signup for ${name}</a>`
-            }
+    if (feature.properties) {
+        var obj = feature.properties;
+        var tips = '';
+        var pops = '';
+        for (var key in obj) { //iterate over feature properties
+          switch(key.substr(key.length - 4).toLowerCase()) { //last 4 characters of property
+            case 'name':
+              tips = `${obj[key]}<br>` + tips;
+              break;
           }
-          if (tips) {layer.bindTooltip(tips);}
-          if (pops) {layer.bindPopup(pops);}
-      }
-    } //end Lady Beetle Survey Blocks code
-    else if (5 == layer.options.id) { //EAME Survey Blocks
-      if (feature.properties) {
-          var obj = feature.properties;
-          var tips = ''; //toolTip text
-          var pops = ''; //popup text
-          for (var key in obj) { //iterate over feature properties
-            //switch(key.substr(key.length - 4).toLowerCase()) { //last 4 characters of property
-            switch(key.toUpperCase()) {
-              case 'BLOCKNAME':
-                tips += `Block Name: ${obj[key]}<br>`;
-                break;
-              case 'BLOCK_TYPE':
-        	      if (obj[key] == 'PRIORITY1') {
-        		      tips = '<b><u>EAME SURVEY BLOCK - HIGH PRIORITY</u></b><br>' + tips;
-        	      } else if (obj[key] == 'PRIORITY') {
-                  tips = '<b><u>EAME SURVEY BLOCK - PRIORITY</u></b><br>' + tips;
-                } else if (obj[key] == 'NONPRIOR') {
-                  tips = 'EAME SURVEY BLOCK - NON-PRIORITY<br>' + tips;
-        	      } else {
-        	        tips = `${obj[key]}<br>` + tips;
-        	      }
-                break;
-              case 'HAY_HECTARES':
-                tips += `Hay Coverage in Hectares: ${obj[key]}<br>`;
-                break;
-              default:
-                //tips += `${key}: ${obj[key]}<br>`;
-                break;
-            }
-            if (feature.properties.BLOCKNAME &&
-              (feature.properties.BLOCK_TYPE=='PRIORITY'
-              || feature.properties.BLOCK_TYPE=='PRIORITY1')
-              || feature.properties.BLOCK_TYPE=='NONPRIOR')
-            {
-              var name = feature.properties.BLOCKNAME;
-              var link = feature.properties.BLOCKNAME.replace(/( - )|\s+/g,'').toLowerCase();
-              if (feature.properties.BLOCK_TYPE=='PRIORITY1') {
-                pops = `<b><u>EAME SURVEY BLOCK - HIGH PRIORITY</u></b></br>`;
-              } else if (feature.properties.BLOCK_TYPE=='PRIORITY') {
-                pops = `<b><u>EAME SURVEY BLOCK - PRIORITY</u></b></br>`;
-              } else {
-                pops = `<b><u>EAME SURVEY BLOCK - NON-PRIORITY</u></b></br>`;
-              }
-              pops += `<a target="_blank" href="https://val.vtecostudies.org/projects/eastern-meadowlark-blitz/adopt-a-survey-block?surveyblock=${link}">Signup for ${name}</a></br>`
-              pops += `<a target="_blank" href="https://s3.us-west-2.amazonaws.com/eame.surveyblocks/${link}.pdf">Get ${name} block map</a></br>`;
-              if (feature.properties.HAY_HECTARES) {pops += `</br>Hay Coverage in Hectares: ${feature.properties.HAY_HECTARES}`;}
-            }
-          }
-          if (tips) {layer.bindTooltip(tips);}
-          if (pops) {layer.bindPopup(pops);}
-      } //end if (feature.properties)
-    } //end EAME Beetle Survey Blocks code
-    else { //handle all other layers' toolTips and popups
-      if (feature.properties) {
-          var obj = feature.properties;
-          var tips = '';
-          var pops = '';
-          for (var key in obj) { //iterate over feature properties
-            switch(key.substr(key.length - 4).toLowerCase()) { //last 4 characters of property
-              case 'name':
-                tips = `${obj[key]}<br>` + tips;
-                break;
-            }
-          }
-        if (tips) {layer.bindTooltip(tips);}
-        if (pops) {layer.bindPopup(pops);}
-      }
+        }
+      if (tips) {layer.bindTooltip(tips);}
+      if (pops) {layer.bindPopup(pops);}
     }
 }
 
@@ -430,14 +321,11 @@ function onEachFeature(feature, layer) {
 function onStyle(feature) {
     if (feature.properties.BLOCK_TYPE) {
       switch(feature.properties.BLOCK_TYPE) {
-        case 'PRIORITY1':
+        case 'PRIORITY':
           return {color:"black", weight:1, fillOpacity:0.2, fillColor:"red"};
           break;
-        case 'PRIORITY':
-          return {color:"black", weight:1, fillOpacity:0.2, fillColor:"yellow"};
-          break;
         case 'NONPRIOR':
-          return {color:"black", weight:1, fillOpacity:0.0, fillColor:"blue"};
+          return {color:"black", weight:1, fillOpacity:0.0, fillColor:"yellow"};
           break;
       }
     } else {
@@ -494,7 +382,7 @@ async function fetchGbifVtOccsByTaxon(taxonName=false) {
   let off = 0;
   let max = 9900;
   do {
-    page = await getOccsByNameAndLocation(off, lim, taxonName, gadm_gid_vt);
+    page = await getOccsByNameAndLocation(off, lim, taxonName, gadmGidVt);
     if (page.count > max) {
       abortData = true;
       let msg = `Fetching VT occurrences of '${taxonName}' from the GBIF API has ${fmt.format(page.count)} records, which exceeds the ${fmt.format(max)} record limit. Please choose a smaller data scope.`;
@@ -969,7 +857,7 @@ function addMarker() {
 function initGbifStandalone() {
     addMap();
     addMapCallbacks();
-    //if (!boundaryLayerControl) {addBoundaries();}
+    if (!boundaryLayerControl) {addBoundaries();}
 }
 
 //integrated module usage
@@ -1145,7 +1033,7 @@ export function loadSpeciesMap(speciesStr, htmlId='valMap') {
     initGbifStandalone();
     valMap.options.minZoom = 7;
     valMap.options.maxZoom = 17;
-    //if (!boundaryLayerControl) {addBoundaries();}
+    if (!boundaryLayerControl) {addBoundaries();}
     getSpeciesListData(speciesObj)
   }
 }

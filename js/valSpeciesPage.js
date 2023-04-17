@@ -241,10 +241,10 @@ if (taxonName) {
     inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut')
     gbifInfo.then(info => {
         if (info.total < 9900) {
-            showObsTab(1);
+            initObsTab(1);
             loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`, 'occMap');
         } else {
-            showObsTab(0);
+            initObsTab(0);
             console.log(`Can't load observations. Too many to plot. (${info.total})`);
         }
     })
@@ -254,9 +254,10 @@ if (taxonName) {
     alert(qryMsg);
 }
 
-function showObsTab(show=1) {
+//This just initializes the occurrence map tab. The map is shown by clicking its tab, handled with inline script in html.
+function initObsTab(show=1) {
     let eleTab = document.getElementById('occMapTab');
-    let eleObs = document.getElementById('occMap');
-    eleTab.style.display = show ? 'block' : 'none';
-    eleObs.style.display = show ? 'block' : 'none';
+    if (eleTab) {
+        eleTab.style.display = show ? 'block' : 'none';
+    }
 }
