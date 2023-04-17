@@ -99,16 +99,16 @@ async function fillTaxonStats(taxonName, wikiName=false) {
         //eleLast.innerHTML = `&nbsp${Last}`;
         taxonKey.then(taxonKey => {
             eleRecs.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(gbif.total)}</a>`;
-            eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+            eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&gbif-year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
             //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Fdat}">${Frst}</a>`
-            eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+            eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
             //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         });
         taxonKey.catch(err => {
             eleRecs.innerHTML = `&nbsp<a href="${resultsUrl}?q=${taxonName}">${nFmt.format(gbif.total)}</a>`;
-            eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?q=${taxonName}&year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+            eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?q=${taxonName}&gbif-year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
             //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&q=${taxonName}&event_date=${Fdat}">${Frst}</a>`
-            eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?q=${taxonName}&year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+            eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?q=${taxonName}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
             //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         })
     });
