@@ -92,8 +92,9 @@
             <div class="col-lg-auto tab">
                 <button id="distrTab" class="tabLinksBot" onclick="openTab(event, 'Distr', 'tabContentBot', 'tabLinksBot')">Suitability/Distribution</button>
                 <button id="aboutTab" class="tabLinksBot" onclick="openTab(event, 'About', 'tabContentBot', 'tabLinksBot')">About</button>
-                <!---->
+                <!--
                 <button id="occMapTab" class="tabLinksBot" onclick="openTab(event, 'occMap', 'tabContentBot', 'tabLinksBot')">Observations</button>
+                -->
             </div>
             <div id="Distr" class="col-lg-auto tabContentBot">
                 <img id="speciesDistribution" class="speciesDistribution center-image"/>
@@ -116,10 +117,11 @@
                     </div>
                 </div>
             </div>
-            <!---->
+            <!--
             <div id="occMap" class="tabContentBot"style="height:600px;width:100%;overflow:hidden;">
                 <button id="zoomVT" class="map-button">Zoom VT</button>
             </div>
+            -->
         </div>
   </div>
 
