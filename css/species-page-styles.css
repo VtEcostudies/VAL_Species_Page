@@ -38,6 +38,11 @@ header {
     font-style: italic;
 }
 
+.speciesRank {
+  font-size: large;
+  text-decoration: underline;
+}
+
 .taxonDetailBottom {
     padding-top: 20px;
     padding-right: 15px;

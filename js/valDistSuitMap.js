@@ -55,7 +55,7 @@ export async function getDistributionLeafletOverlay(taxonName) {
     }).addTo(distMap);
 }
 
-export function getDistribution(taxonName, imagId, paraId) {
+export function getDistribution(taxonName, imagId, paraId, fileConfig) {
     let eleImg = document.getElementById(imagId);
     let elePrg = document.getElementById(paraId);
     if (eleImg) {
@@ -64,7 +64,7 @@ export function getDistribution(taxonName, imagId, paraId) {
             console.log(`ERROR getDistribution ERROR`, err);
             eleImg.style.display='none';
             elePrg.style.display='block';
-            elePrg.innerHTML = `VAL does not host Suitability/Distribution maps for "${taxonName}". 
+            elePrg.innerHTML = `${fileConfig.dataConfig.atlasName} does not host Suitability/Distribution maps for "${taxonName}". 
             Either the available occurrence data is inadequate to generate them, or the queried
             name's taxonomic rank is not species.`;
         }

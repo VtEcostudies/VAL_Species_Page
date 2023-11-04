@@ -27,16 +27,18 @@ async function fillTaxonStats(taxonKey, taxonName, taxonObj, wikiName=false, fil
     let eleFsL = document.getElementById("fsLbl");
     let eleLsL = document.getElementById("lsLbl");
     eleTtl.innerText = `${dataConfig.atlasName}`;
-    eleVtL.innerText = `${dataConfig.atlasPlace} Records`;
-    eleFsL.innerText = `First ${dataConfig.atlasAbbrev} Record`;
-    eleLsL.innerText = `Last ${dataConfig.atlasAbbrev} Record`;
+    eleVtL.innerText = `${dataConfig.atlasPlace} Records:`;
+    eleFsL.innerText = `First ${dataConfig.atlasAbbrev} Record:`;
+    eleLsL.innerText = `Last ${dataConfig.atlasAbbrev} Record:`;
 
     let eleComn = document.getElementById("common");
+    let eleRank = document.getElementById("trank");
     let eleTaxn = document.getElementById("taxon");
     let eleSrnk = document.getElementById("srank");
     let eleSgcn = document.getElementById("sgcn");
     let eleIucn = document.getElementById("iucn");
-    let eleTndE = document.getElementById("TndE");
+    let elelTnE = document.getElementById("teLbl"); //regional Threatened and Endangered listings label
+    let eleTndE = document.getElementById("TndE"); //regional Threatened and Endangered listings value
     let eleVern = document.getElementById("vName");
     let eleImag = document.getElementById("iconicImage");
     let eleAttr = document.getElementById("iconicImageAttrib");
@@ -46,7 +48,8 @@ async function fillTaxonStats(taxonKey, taxonName, taxonObj, wikiName=false, fil
     let eleWiki = document.getElementById("wikiText");
     let eleMore = document.getElementById("wikiPageHtml");
     let htmlWait = `&nbsp<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
-    eleTaxn.innerText = `(${taxonName})`;
+    //eleRank.innerText = `${taxonObj.rank}`;
+    eleTaxn.innerText = `(${taxonObj.rank} ${taxonName})`;
     eleSrnk.innerHTML = htmlWait;
     eleIucn.innerHTML = htmlWait;
     eleTndE.innerHTML = htmlWait;
@@ -54,6 +57,9 @@ async function fillTaxonStats(taxonKey, taxonName, taxonObj, wikiName=false, fil
     eleLast.innerHTML = htmlWait;
     eleRecs.innerHTML = htmlWait;
     if (eleVern) {eleVern.innerHTML = `<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;}
+    elelTnE.style.display = fileConfig.dataConfig.atlasAdmin ? elelTnE.style.display : 'none';
+    eleTndE.style.display = fileConfig.dataConfig.atlasAdmin ? eleTndE.style.display : 'none';
+    elelTnE.innerText = `${fileConfig.dataConfig.atlasAdmin} List:`;
     getStoredData("sheetSranks")
         .then(sheetSranks => {
             let ssr = sheetSranks[taxonName] ? sheetSranks[taxonName] : false;
@@ -106,7 +112,6 @@ async function fillTaxonStats(taxonKey, taxonName, taxonObj, wikiName=false, fil
         */
     });
     let inat = await getInatSpecies(taxonName, taxonObj.rank, taxonObj.parent, getParentRank(taxonObj.rank));
-    console.log('*****************************************************************iNat return value:', inat);
     if (!wikiName && inat.wikipedia_url) {
         wikiName = inat.wikipedia_url.split('/').slice(-1);
     }
@@ -259,7 +264,7 @@ function startUp() {
             gbifCountsByMonthByTaxonKey(taxonKey, 'speciesCountsByMonth', fileConfig);
             gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
             inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut', false, fileConfig.dataConfig.inatProject)
-            getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing');
+            getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
             gbifInfo.then(info => {
                 if (info.total < 9900) {
                     if (initObsTab(1)) {
