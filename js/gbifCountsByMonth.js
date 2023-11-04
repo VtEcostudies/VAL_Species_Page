@@ -1,58 +1,41 @@
 import { getGbifTaxonKeyFromName } from "../VAL_Web_Utilities/js/commonUtilities.js";
+const facetQuery = '&facet=month&facetLimit=1200000&limit=0';
 
 /*
 GBIF occurrence counts by month:
 https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus%20plexippus&facet=month&facetLimit=1200000&limit=0
 https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=false&scientificName=Danaus%20plexippus&facet=month&facetLimit=1200000&limit=0
 */
-
-async function fetchData(taxonName) {
-    let urls = [
-        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`,
-        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`
-        ]
-    let enc = encodeURI(urls[0]);
-    try {
-        let res = await fetch(enc);
-        console.log(`gbifCountsByMonth(${enc}) RAW RESULT:`, res);
-        let json = await res.json();
-        console.log(`gbifCountsByMonth(${enc}) JSON RESULT:`, json);
-
-        let total = json.count;
-        let counts = json.facets[0].counts;
-        let max = 0;
-        counts = counts.map(data => {
-            let i = Number(data.name), c = data.count, m = monthName(i)[0];
-            let o = {'index':i, 'name':m, 'count':c};
-            max = data.count > max ? data.count : max;
-            return o;
-        });
-        console.log('GBIF counts by month sorted by count:', counts);
-        counts.sort((a,b) => {return a.index > b.index;})
-        console.log('GBIF counts by month sorted by month:', counts);
-        return {total:total, max:max, counts:counts};
-    } catch (err) {
-        console.log(`gbifCountsByMonth(${enc}) ERROR:`, err);
-        return new Error(err);
+export async function fetchAllGbifCountsByMonthByKey(taxonKey, fileConfig) {
+    return await fetchAllByKey(taxonKey, fileConfig);
+}
+export async function fetchAllGbifCountsByMonthByName(taxonName, fileConfig) {
+    return await fetchAllByName(taxonName, fileConfig);
+}
+async function fetchAllByKey(taxonKey, fileConfig) {
+    return await fetchAll(`taxonKey=${taxonKey}`, fileConfig);
+}
+async function fetchAllByName(taxonName, fileConfig) {
+    return await fetchAll(`scientificName=${taxonName}`, fileConfig);
+}
+function fetchAll(searchTerm, fileConfig) {
+    let qrys = [];
+    if (fileConfig) {
+        qrys = fileConfig.predicateToQueries(fileConfig.dataConfig.rootPredicate);
+        //console.log('gbifCountsByMonth.js | rootPredicate converted to http query parameters:', qrys);
     }
-}
-
-async function fetchAllByKey(taxonKey) {
-    return await fetchAll(`taxonKey=${taxonKey}`);
-}
-async function fetchAllByName(taxonName) {
-    let taxonKey = await getGbifTaxonKeyFromName(taxonName);    
-    if (taxonKey) {
-        return await fetchAll(`taxonKey=${taxonKey}`);
+    let urls = [];
+    if (qrys.length) {
+        for (const qry of qrys) {
+            urls.push(`${fileConfig.dataConfig.gbifApi}/occurrence/search?${qry}&${searchTerm}${facetQuery}`);
+        }
+        console.log(`*************gbifCountsByMonth.js | ${fileConfig.dataConfig.atlasAbbrev} api urls:`, urls);
     } else {
-        return await fetchAll(`scientificName=${taxonName}`);
-    }
-}
-function fetchAll(searchTerm) {
-    let urls = [
+        urls = [
         `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&${searchTerm}&facet=month&facetLimit=1200000&limit=0`,
         `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&${searchTerm}&facet=month&facetLimit=1200000&limit=0`
         ]
+    }
     let all = Promise.all([fetch(encodeURI(urls[0])),fetch(encodeURI(urls[1]))])
         .then(responses => {
             //console.log(`gbifCountsByMonth::fetchAll(${searchTerm}) RAW RESULT:`, responses);
@@ -99,8 +82,31 @@ function fetchAll(searchTerm) {
     console.log(`fetchAll promise.all`, all);
     return all; //this is how it's done. strange errors when not.
 }
-
-export async function gbifCountsByMonth(taxonName, htmlId) {
+export async function gbifCountsByMonthByTaxonName(taxonName, taxonRank, htmlId, fileConfig) {
+    let taxonKey = await getGbifTaxonKeyFromName(taxonName, taxonRank);
+    if (taxonKey) {
+        gbifCountsByMonthByTaxonKey(taxonKey, htmlId, fileConfig);
+    } else {
+        fetchAllByName(taxonName, fileConfig)
+        .then(data => {
+            gbifCountsByMonth(data, htmlId);
+        })
+        .catch(err => {
+            console.log(`ERROR gbifCountsByMonthByTaxonName ERROR: `, err);
+        }) 
+    }
+}
+export async function gbifCountsByMonthByTaxonKey(taxonKey, htmlId, fileConfig) {
+    fetchAllByKey(taxonKey, fileConfig)
+    .then(data => {
+        gbifCountsByMonth(data, htmlId);
+    })
+    .catch(err => {
+        console.log(`ERROR export async function gbifCountsByMonthByTaxonKey(taxonKey, htmlId, fileConfig) {
+            ERROR: `, err);
+    }) 
+}
+function gbifCountsByMonth(data, htmlId) {
     // set the dimensions and margins of the graph
     const margin = {top: 15, right: 30, bottom: 30, left: 10},
         width = 300 - margin.left - margin.right,
@@ -113,9 +119,6 @@ export async function gbifCountsByMonth(taxonName, htmlId) {
             .attr("height", height + margin.top + margin.bottom)
         .append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    fetchAllByName(taxonName)
-        .then(data => {
 
         // X axis
         var x = d3.scaleBand()
@@ -157,10 +160,6 @@ export async function gbifCountsByMonth(taxonName, htmlId) {
             //.text(`${taxonName} Phenology`)
             .text(`GBIF Observations by Month`)
     
-        })
-        .catch(err => {
-            console.log(`ERROR gbifCountsByMonth ERROR: `, err);
-        }) 
 }
 
 function monthName(i) {
@@ -177,5 +176,39 @@ function monthName(i) {
         case 10: return ['Oct','October'];
         case 11: return ['Nov','November'];
         case 12: return ['Dec','December'];
+    }
+}
+
+/*
+    Unused function originally developed to query one URL. Replaced with fetchAll
+*/
+async function fetchData(taxonName) {
+    let urls = [
+        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`,
+        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`
+        ]
+    let enc = encodeURI(urls[0]);
+    try {
+        let res = await fetch(enc);
+        console.log(`gbifCountsByMonth(${enc}) RAW RESULT:`, res);
+        let json = await res.json();
+        console.log(`gbifCountsByMonth(${enc}) JSON RESULT:`, json);
+
+        let total = json.count;
+        let counts = json.facets[0].counts;
+        let max = 0;
+        counts = counts.map(data => {
+            let i = Number(data.name), c = data.count, m = monthName(i)[0];
+            let o = {'index':i, 'name':m, 'count':c};
+            max = data.count > max ? data.count : max;
+            return o;
+        });
+        console.log('GBIF counts by month sorted by count:', counts);
+        counts.sort((a,b) => {return a.index > b.index;})
+        console.log('GBIF counts by month sorted by month:', counts);
+        return {total:total, max:max, counts:counts};
+    } catch (err) {
+        console.log(`gbifCountsByMonth(${enc}) ERROR:`, err);
+        return new Error(err);
     }
 }

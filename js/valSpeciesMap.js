@@ -9,8 +9,9 @@ const fmt = new Intl.NumberFormat(); //use this to format nubmers like fmt.forma
 var vceCenter = [43.6962, -72.3197]; //VCE coordinates
 var vtCenter = [43.916944, -72.668056]; //VT geo center, downtown Randolph
 var vtAltCtr = [43.858297, -72.446594]; //VT border center for the speciespage view, where px bounds are small and map is zoomed to fit
+var mapCenter = vtAltCtr;
 var zoomLevel = 8;
-var zoomCenter = vtCenter;
+var zoomCenter = mapCenter;
 var cmGroup = {}; //object of layerGroups of different species' markers grouped into layers
 var cmCount = {}; //a global counter for cmLayer array-objects across mutiple species
 var cmTotal = {}; //a global total for cmLayer counts across species
@@ -48,8 +49,8 @@ var mapId = 'valMap';
 function addMap() {
     valMap = L.map(mapId, {
             zoomControl: false, //start with zoom hidden.  this allows us to add it below, in the location where we want it.
-            center: vtAltCtr,
-            zoom: 8
+            center: mapCenter,
+            zoom: zoomLevel
         });
 
     new L.Control.Zoom({ position: 'bottomleft' }).addTo(valMap);
@@ -94,6 +95,15 @@ function addMap() {
         attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
       });
 
+    var googleSat = L.tileLayer("https://{s}.google.com/vt/lyrs=s,h&hl=tr&x={x}&y={y}&z={z}", {
+        id: 'google.satellite', //illegal property
+        name: 'Google Satellite +', //illegal property
+        subdomains: ["mt0", "mt1", "mt2", "mt3"],
+        zIndex: 0,
+        maxNativeZoom: 20,
+        maxZoom: 20
+      });
+
     baseMapDefault = esriTopo; //for use elsewhere, if necessary
     valMap.addLayer(baseMapDefault); //and start with that one
 
@@ -106,7 +116,7 @@ function addMap() {
     basemapLayerControl.addBaseLayer(satellite, "Mapbox Satellite");
     basemapLayerControl.addBaseLayer(esriWorld, "ESRI Imagery");
     basemapLayerControl.addBaseLayer(esriTopo, "ESRI Topo Map");
-    basemapLayerControl.addBaseLayer(openTopo, "Open Topo Map");
+    basemapLayerControl.addBaseLayer(googleSat, "Google Satellite+");
 
     console.log('done adding basemaps');
 
@@ -148,7 +158,7 @@ async function zoomVT() {
       }
     })
   } else {
-    valMap.setView(L.latLng(vtCenter), 8);
+    valMap.setView(L.latLng(mapCenter), 8);
   }
 }
 
@@ -564,13 +574,26 @@ function foreground(color) {
 async function getCentroid(type, valu) {
   //console.log('getCentroid', type, valu);
   let item = await getGeoJsonLayerFromTypeName(type, valu);
-  //console.log('getCentroid RESULT', item);
+  console.log('getCentroid RESULT', item);
   if (item.feature) {
-    let polygon = turf.polygon(item.feature.geometry.coordinates);
-    let centroid = turf.centroid(polygon);
-    //console.log(`${type} ${valu} CENTROID:`, centroid);
-    //let centMark = L.marker([centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]]).addTo(valMap);
-    return L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+    try {
+      let gTyp = item.feature.geometry.type;
+      let polygon;
+      if ('Polygon' == gTyp) {
+        console.log(`getCentroid | Geometry Type POLYGON`);
+        polygon = turf.polygon(item.feature.geometry.coordinates);
+      } else if ('GeometryCollection' == type) {
+        console.log(`getCentroid | Geometry Type GEOMETRY COLLECTION`);
+        polygon = turf.polygon(item.feature.geometry.geometries[0]);
+      }
+      let centroid = turf.centroid(polygon);
+      console.log(`getCentroid | ${type} ${valu} CENTROID:`, centroid);
+      //let centMark = L.marker([centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]]).addTo(valMap);
+      return L.latLng(centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]);
+    } catch (err) {
+      console.log('getCentroid ERROR:', err);
+      return L.latLng(42.0, 71.5);
+    }
   } else {
     return L.latLng(42.0, 71.5);
   }
@@ -648,7 +671,7 @@ async function updateMap(occJsonArr, taxonName) {
               altLoc = await getCentroid('county', occJson.county);
               occJson.noCoordinates = `${occJson.county} County`;
             } else {
-              altLoc =  vtCenter; //await getCentroid('state', 'Vermont'); //L.latLng(44.0, -71.5);
+              altLoc =  mapCenter; //await getCentroid('state', 'Vermont'); //L.latLng(44.0, -71.5);
               occJson.noCoordinates = 'Vermont'; //None';
             }
         }
@@ -837,7 +860,7 @@ async function occurrencePopupInfo(occRecord) {
     return info;
 }
 
-//iterate through all plotted pools in each featureGroup and alter each radius
+//iterate through all plotted points in each featureGroup and alter each radius
 function SetEachPointRadius(radius = cmRadius) {
   cmRadius = Math.floor(zoomLevel/2);
   Object.keys(cmGroup).forEach((taxonName) => {
@@ -860,97 +883,6 @@ function initGbifStandalone() {
     if (!boundaryLayerControl) {addBoundaries();}
 }
 
-//integrated module usage
-export function getValOccCanvas(map, taxonName) {
-    valMap = map;
-
-    if (taxonName) {
-        addMapCallbacks();
-        initGbifOccCanvas();
-        cmGroup[taxonName] = L.layerGroup().addTo(valMap); //create a new, empty, single-species layerGroup to be populated from API
-        cgColor[taxonName] = cgColors[0];
-        cmCount[taxonName] = 0;
-        cmTotal[taxonName] = 0;
-        addGbifOccByTaxon(taxonName);
-        if (!boundaryLayerControl) {addBoundaries();}
-        if (!speciesLayerControl) {
-            speciesLayerControl = L.control.layers().addTo(valMap);
-            var idTaxonName = taxonName.split(' ').join('_');
-            speciesLayerControl.addOverlay(cmGroup[taxonName], `<span id="${idTaxonName}">${taxonName}</span>`);
-            speciesLayerControl.setPosition("bottomright");
-        }
-    } else {
-        initGbifOccCanvas();
-    }
-}
-
-/*
- * Standalone module setup
- *
- * Required html element where id="valStandalone"
- */
-if (document.getElementById("gbifStandalone")) {
-    window.addEventListener("load", function() {
-
-        initGbifStandalone();
-
-        document.getElementById("abortData").addEventListener("click", function() {
-          abortDataLoad();
-        });
-
-        document.getElementById("sciName").addEventListener("click", function() {
-          nameType = 0;
-          console.log(`nameType`, nameType);
-        })
-        document.getElementById("comName").addEventListener("click", function() {
-          nameType = 1;
-          console.log(`nameType`, nameType);
-        })
-
-        // Add a listener to handle the 'Get Data' button click
-        document.getElementById("getData").addEventListener("click", function() {
-            initGbifOccCanvas();
-            if (testData) {
-              const taxonName = 'TestData';
-              cmGroup[taxonName] = L.layerGroup().addTo(valMap); //create a new, empty, single-species layerGroup to be populated from API
-              cgColor[taxonName] = cgColors[0];
-              getTestData('../testData/testData.json', taxonName);
-            } else {
-              const taxonName = getCanonicalName();
-              cmGroup[taxonName] = L.layerGroup().addTo(valMap); //create a new, empty, single-species layerGroup to be populated from API
-              addGbifOccByTaxon(taxonName);
-            }
-        });
-
-        // Add a listener to handle the 'Get Species Info' button click
-        document.getElementById("getInfo").addEventListener("click", function() {
-            var data = getAllData();
-            var info = '';
-            if (data) {
-                Object.keys(data).forEach(function(key) {
-                    info += `${key}: ${data[key]}` + String.fromCharCode(13);
-                });
-                alert(info);
-            } else {
-                alert('No Species Selected.');
-            }
-            //alert(getCanonicalName());
-            //alert(getScientificName());
-        });
-
-    });
-}
-
-if (document.getElementById("valSurveyBlocksLady")) {
-  surveyBlocksLady = true;
-  initGbifStandalone();
-}
-
-if (document.getElementById("valSurveyBlocksEAME")) {
-  surveyBlocksEAME = true;
-  initGbifStandalone();
-}
-
 let argUrl = `${location.hostname}${location.pathname}?species=`;
 let argMsg = `
 Please pass an object literal like:\n
@@ -967,58 +899,13 @@ Shape Options:
 {0:"round",1:"square",2:"triangle",3:"diamond",4:"star"}
 `;
 
-/*
- * Minimal (map-only) standalone use
- *
- * Requires html element where id="gbifLoadOnOpen"
- *
- */
-if (document.getElementById("gbifLoadOnOpen")) {
-    window.addEventListener("load", function() {
+export function loadSpeciesMap(speciesStr, htmlId='valMap', fileConfig) {
 
-        var urlLoad = window.location.toString();
-        urlLoad = decodeURI(urlLoad);
-        var speciesStr = urlLoad.substring(urlLoad.lastIndexOf("=")+1);
-        console.log(`url-parsed species string: ${speciesStr}`);
-        var speciesObj = {};
-        try {
-          speciesObj = JSON.parse(speciesStr);
-          console.log('species object:', speciesObj)
-        } catch(error) {
-          console.log('ERROR parsing http arugment', speciesStr, 'as JSON:', error);
-          alert(argMsg);
-        }
-
-        initGbifStandalone();
-        valMap.options.minZoom = 7;
-        valMap.options.maxZoom = 17;
-        if (!boundaryLayerControl) {addBoundaries();}
-        if (typeof speciesObj != "object") {
-            alert(argMsg);
-        } else {
-            getSpeciesListData(speciesObj);
-        }
-
-        // Add a listener to handle the 'clear Data' button click
-        if (document.getElementById("clearData")) {
-            document.getElementById("clearData").addEventListener("click", function() {
-                initGbifOccCanvas();
-            });
-        }
-
-        // Add a listener to handle the 'Get Data' button click
-        if (document.getElementById("getData")) {
-            document.getElementById("getData").addEventListener("click", function() {
-                getSpeciesListData();
-            });
-        }
-    });
-}
-
-export function loadSpeciesMap(speciesStr, htmlId='valMap') {
-
-  console.log(`loadSpeciesData input string: ${speciesStr} for htmlId: ${htmlId}`);
+  console.log(`valSpeciesMap::loadSpeciesData input string: ${speciesStr} for htmlId: ${htmlId}`);
   mapId = htmlId;
+  mapCenter = [ fileConfig.dataConfig.mapSettings.lat, fileConfig.dataConfig.mapSettings.lng ];
+  zoomCenter = mapCenter;
+  zoomLevel = fileConfig.dataConfig.mapSettings.zoom;
   var speciesObj = {};
   try {
     speciesObj = JSON.parse(speciesStr);

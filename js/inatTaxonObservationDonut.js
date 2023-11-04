@@ -1,7 +1,35 @@
-export function inatTaxonObsDonut(taxonName, htmlId, commonName=false) {
+/*
+To-do:
+- allow for other ways to scope the view of iNat data, other than by project
+- possible but unknown options:
+  - by geo bounding box
+  - by state or other locale name
+  - by gadmGid
+
+  https://www.inaturalist.org/pages/api+reference#get-observations
+
+  swlat
+      Southwest latitude of a bounding box query.
+      Allowed values: -90 to 90 
+  swlng
+      Southwest longitude of a bounding box query.
+      Allowed values: -180 to 180 
+  nelat
+      Northeast latitude of a bounding box query.
+      Allowed values: -90 to 90 
+  nelng
+      Northeast longitude of a bounding box query.
+      Allowed values: -180 to 180 
+  list_id
+      Restrict results to observations of taxa on the specified list. Limited to lists with 2000 taxa or less.
+      Allowed values: iNat list ID 
+*/
+export function inatTaxonObsDonut(taxonName, htmlId, commonName=false, inatProject=false) {
+
+  console.log('inatTaxonObsDonut', taxonName, htmlId, commonName, inatProject);
 
   var baseUrl = 'https://api.inaturalist.org/v1/observations';
-  var project = '?project_id=vermont-atlas-of-life';
+  var project = inatProject ? `?project_id=${inatProject}` : '?'; //'?project_id=vermont-atlas-of-life';
   var research = '&quality_grade=research';
   var needs_id = '&quality_grade=needs_id';
   var casual = '&quality_grade=casual';
@@ -12,7 +40,7 @@ export function inatTaxonObsDonut(taxonName, htmlId, commonName=false) {
 
   var inatLink = `https://www.inaturalist.org/observations/identify?taxon_name=${taxonName}&quality_grade=needs_id`;
 
-  console.log('inatTaxonObsDonut | taxonName', taxonName, 'commonName', commonName, 'htmlId', htmlId);
+  console.log('inatTaxonObsDonut | taxonName', taxonName, 'commonName', commonName, 'htmlId', htmlId, 'inatProject', inatProject, 'project', project);
 
   d3.select(htmlId).remove()
 

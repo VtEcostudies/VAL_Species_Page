@@ -1,21 +1,35 @@
 import { getGbifTaxonKeyFromName } from "../VAL_Web_Utilities/js/commonUtilities.js";
+const facetQuery = '&facet=eventDate&facetLimit=1200000&limit=0';
 
 /*
-GBIF occurrence counts by year:
+Vermont GBIF occurrence counts by year:
 https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus%20plexippus&facet=eventDate&facetLimit=1200000&limit=0
 https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=false&scientificName=Danaus%20plexippus&facet=eventDate&facetLimit=1200000&limit=0
 */
-async function fetchAllByKey(taxonKey) {
-    return await fetchAll(`taxonKey=${taxonKey}`);
+async function fetchAllByKey(taxonKey, fileConfig) {
+    return await fetchAll(`taxonKey=${taxonKey}`, fileConfig);
 }
-async function fetchAllByName(taxonName) {
-    return await fetchAll(`scientificName=${taxonName}`);
+async function fetchAllByName(taxonName, fileConfig) {
+    return await fetchAll(`scientificName=${taxonName}`, fileConfig);
 }
-function fetchAll(searchTerm) {
-    let urls = [
+function fetchAll(searchTerm, fileConfig=false) {
+    let qrys = [];
+    if (fileConfig) {
+        qrys = fileConfig.predicateToQueries(fileConfig.dataConfig.rootPredicate);
+        //console.log('gbifCountsByDate.js | rootPredicate converted to http query parameters:', qrys);
+    }
+    let urls = [];
+    if (qrys.length) {
+        for (const qry of qrys) {
+            urls.push(`${fileConfig.dataConfig.gbifApi}/occurrence/search?${qry}&${searchTerm}${facetQuery}`);
+        }
+        console.log(`gbifCountsByDate.js | ${fileConfig.dataConfig.atlasAbbrev} api urls:`, urls);
+    } else {
+        urls = [
         `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&${searchTerm}&facet=eventDate&facetLimit=1200000&limit=0`,
         `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&${searchTerm}&facet=eventDate&facetLimit=1200000&limit=0`
         ]
+    }
     let all = Promise.all([fetch(encodeURI(urls[0])),fetch(encodeURI(urls[1]))])
         .then(responses => {
             //console.log(`gbifCountsByDate::fetchAll(${searchTerm}) RAW RESULT:`, responses);
@@ -65,28 +79,21 @@ function fetchAll(searchTerm) {
     return all; //this is how it's done. strange errors when not.
 }
 
-export async function gbifCountsByDateByTaxonKey(taxonKey) {
-    return await fetchAllByKey(taxonKey);
+export async function gbifCountsByDateByTaxonKey(taxonKey, fileConfig) {
+    return await fetchAllByKey(taxonKey, fileConfig);
 }
 
-export async function gbifCountsByDate(taxonName) {
+export async function gbifCountsByDateByTaxonName(taxonName, fileConfig) {
+    return await fetchAllByName(taxonName, fileConfig);
+}
 
-    let taxonKey = await getGbifTaxonKeyFromName(taxonName);
+export async function gbifCountsByDate(taxonName, fileConfig) {
+
+    let taxonKey = await getGbifTaxonKeyFromName(taxonName, fileConfig);
     
     if (taxonKey) {
-        return await fetchAllByKey(taxonKey);
+        return await fetchAllByKey(taxonKey, fileConfig);
     } else {
-        return await fetchAllByName(taxonName);
+        return await fetchAllByName(taxonName, fileConfig);
     }
-
-/*
-    .then(data => {
-        console.log(`gbifCountsByDate | data`, data);
-        return data;
-    })
-    .catch(err => {
-        console.log(`ERROR gbifCountsByDate ERROR: `, err);
-        return data;
-    })
-*/
 }

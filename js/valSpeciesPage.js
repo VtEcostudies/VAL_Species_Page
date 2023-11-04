@@ -1,48 +1,36 @@
 import { getDistribution } from './valDistSuitMap.js'
-import { inatFreqHistogram } from './inatPhenologyHistogram.js';
-import { gbifCountsByYear } from './gbifCountsByYear.js'
-import { gbifCountsByMonth } from './gbifCountsByMonth.js'
+//import { inatFreqHistogram } from './inatPhenologyHistogram.js';
+import { gbifCountsByYearByTaxonKey, gbifCountsByYearByTaxonName } from './gbifCountsByYear.js'
+import { gbifCountsByMonthByTaxonKey, gbifCountsByMonthByTaxonName } from './gbifCountsByMonth.js'
+import { gbifCountsByDateByTaxonKey, gbifCountsByDateByTaxonName } from './gbifCountsByDate.js';
 import { getStoredData } from './fetchSpeciesData.js';
 import { getWikiHtmlPage, getWikiSummary } from '../VAL_Web_Utilities/js/wikiPageData.js';
-import { gbifCountsByDate, gbifCountsByDateByTaxonKey } from './gbifCountsByDate.js';
 import { getInatSpecies } from '../VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
 import { inatTaxonObsDonut } from './inatTaxonObservationDonut.js';
-import { getGbifTaxonKeyFromName } from '../VAL_Web_Utilities/js/commonUtilities.js';
-import { dataConfig } from '../VAL_Web_Utilities/js/gbifDataConfig.js';
+import { getGbifTaxonObjFromName, getGbifTaxonObjFromKey, getParentRank } from '../VAL_Web_Utilities/js/commonUtilities.js';
 
-const nFmt = new Intl.NumberFormat();
-var gbifInfo = false;
+var gbifInfo = false; //gbif occurrence query promise shared to handle in multiple sections
+var siteName = false;
 
-const gbifGadmVtOccUrl = `https://gbif.org/occurrence/search?gadmGid=USA.46_1`;
-const gbifStateVtOccUrl = `https://gbif.org/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)`;
-//const valSpcExpUrl = `https://val.vtecostudies.org/gbif-species-explorer`;
-//const valOccExpUrl = `https://val.vtecostudies.org/gbif-explorer`;
-//const altOccExpUrl = `https://vtatlasoflife.org/VAL_Data_Explorers/occurrences.html`;
-const exploreUrl = dataConfig.exploreUrl;
-const resultsUrl = dataConfig.resultsUrl;
-const profileUrl = dataConfig.profileUrl;
-const inatSpeciesUrl = `https://www.inaturalist.org/taxa/search`;
-const wikiPageUrl = `https://www.wikipedia.org/wiki/`
+startUp();
 
-const objUrlParams = new URLSearchParams(window.location.search);
+async function fillTaxonStats(taxonKey, taxonName, taxonObj, wikiName=false, fileConfig) {
+    let dataConfig = fileConfig.dataConfig;
+    const exploreUrl = dataConfig.exploreUrl;
+    const resultsUrl = dataConfig.resultsUrl;
+    const wikiPageUrl = `https://www.wikipedia.org/wiki/`
+    const nFmt = new Intl.NumberFormat();
 
-const taxonName = objUrlParams.get('taxonName');
-console.log('Query Param taxonName:', taxonName);
-const taxonKey = objUrlParams.get('taxonKey');
-console.log('Query Param taxonKey:', taxonKey);
-var other = ''; var objOther = {};
-const wikiName = objUrlParams.get('wikiName');
-console.log('Query Param wikiName:', wikiName);
+    let eleTtl = document.getElementById("pageTitle");
+    let eleVtL = document.getElementById("vtLbl");
+    let eleFsL = document.getElementById("fsLbl");
+    let eleLsL = document.getElementById("lsLbl");
+    eleTtl.innerText = `${dataConfig.atlasName}`;
+    eleVtL.innerText = `${dataConfig.atlasPlace} Records`;
+    eleFsL.innerText = `First ${dataConfig.atlasAbbrev} Record`;
+    eleLsL.innerText = `Last ${dataConfig.atlasAbbrev} Record`;
 
-objUrlParams.forEach((val, key) => {
-    if ('taxonKey'!=key && 'taxonName'!=key) {
-      other += `&${key}=${val}`;
-      objOther[key] = val;
-    }
-  });
-
-async function fillTaxonStats(taxonName, wikiName=false) {
     let eleComn = document.getElementById("common");
     let eleTaxn = document.getElementById("taxon");
     let eleSrnk = document.getElementById("srank");
@@ -76,15 +64,18 @@ async function fillTaxonStats(taxonName, wikiName=false) {
             if (eleVern) eleVern.innerHTML = '&nbsp' + (ssr ? ssr.COMMON_NAME : '');
             if (eleComn) eleComn.innerHTML = (ssr ? ssr.COMMON_NAME : '');
         })
+    /*
     let taxonKey = getGbifTaxonKeyFromName(taxonName);
     let gbif = new Promise((resolve,reject) => { //wrap 2 calls in a Promise to pull branching result outside and handle singly, below, with gbif.then...
         taxonKey.then(taxonKey => {
-            resolve(gbif = gbifCountsByDateByTaxonKey(taxonKey));
+            resolve(gbif = gbifCountsByDateByTaxonKey(taxonKey, fileConfig));
         });
         taxonKey.catch(err => {
-            resolve(gbif = gbifCountsByDate(taxonName));
+            resolve(gbif = gbifCountsByDateByTaxonName(taxonName, fileConfig));
         });
     });
+    */
+    let gbif = gbifCountsByDateByTaxonKey(taxonKey, fileConfig);
     gbifInfo = gbif;
     gbif.then(gbif => {
         let Frst = (gbif.min < 7000000000000) ? moment.utc(gbif.min).format("DD MMM YYYY") : 'N/A';
@@ -97,11 +88,12 @@ async function fillTaxonStats(taxonName, wikiName=false) {
         let Ldat = (gbif.max > 0) ? moment.utc(gbif.max).format("YYYY-MM-DD") : '';
         //eleFrst.innerHTML = `&nbsp${Frst}`;
         //eleLast.innerHTML = `&nbsp${Last}`;
-        taxonKey.then(taxonKey => {
+        //taxonKey.then(taxonKey => {
             eleRecs.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(gbif.total)}</a>`;
             eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&gbif-year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
-            //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Fdat}">${Frst}</a>`
             eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+        /*
+            //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Fdat}">${Frst}</a>`
             //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         });
         taxonKey.catch(err => {
@@ -111,8 +103,10 @@ async function fillTaxonStats(taxonName, wikiName=false) {
             eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?q=${taxonName}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
             //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
         })
+        */
     });
-    let inat = await getInatSpecies(taxonName);
+    let inat = await getInatSpecies(taxonName, taxonObj.rank, taxonObj.parent, getParentRank(taxonObj.rank));
+    console.log('*****************************************************************iNat return value:', inat);
     if (!wikiName && inat.wikipedia_url) {
         wikiName = inat.wikipedia_url.split('/').slice(-1);
     }
@@ -126,11 +120,11 @@ async function fillTaxonStats(taxonName, wikiName=false) {
         eleWiki.innerHTML = wiki.extract_html;
     }
     if (eleImag) {
-        taxonKey.then(taxonKey => {
+        //taxonKey.then(taxonKey => {
             let imagLink = `${exploreUrl}?taxonKey=${taxonKey}&view=GALLERY`;
             eleImag.addEventListener("click", (e) => {location.assign(imagLink)});
             eleImag.classList.add("pointer");
-        });
+        //});
         if (inat.default_photo) {
             eleImag.src = inat.default_photo.medium_url;
             eleAttr.innerHTML = inat.default_photo.attribution;
@@ -178,7 +172,7 @@ async function fillTaxonStats(taxonName, wikiName=false) {
                 let atags = hDom.querySelectorAll('a');
                 atags.forEach((ele, idx) => {
                     if (ele.href.includes(url.origin)) {
-                        ele.href = ele.href.replace(url.origin + rout, url.origin + url.pathname + `?taxonName=${taxonName}&wikiName=`);
+                        ele.href = ele.href.replace(url.origin + rout, url.origin + url.pathname + `?siteName=${siteName}&taxonKey=${taxonKey}&taxonName=${taxonName}&wikiName=`);
                     }
                 })
                 let sections = hDom.querySelectorAll('section');
@@ -226,6 +220,7 @@ async function fillTaxonStats(taxonName, wikiName=false) {
             } //end !ambiguous
         })
         .catch(err => {
+            console.log(`fillTaxonStats ERROR:`,err);
             let wikiLink = `${wikiPageUrl}${wikiName ? wikiName : taxonName}`;
             row1Col1.innerHTML = `No wikipedia page for <i>${wikiName ? wikiName : taxonName}</i>. 
             You may create one at <a href="${wikiLink}">${wikiLink}</a>`;
@@ -233,25 +228,57 @@ async function fillTaxonStats(taxonName, wikiName=false) {
     }
 }
 
-if (taxonName) {   
-    fillTaxonStats(taxonName, wikiName);
-    gbifCountsByMonth(taxonName, 'speciesCountsByMonth'); //inatFreqHistogram(taxonName, 'speciesPhenoHisto');
-    gbifCountsByYear(taxonName, 'speciesCountsByYear');
-    getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing');
-    inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut')
-    gbifInfo.then(info => {
-        if (info.total < 9900) {
-            initObsTab(1);
-            loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`, 'occMap');
-        } else {
-            initObsTab(0);
-            console.log(`Can't load observations. Too many to plot. (${info.total})`);
+/*
+There's specific failures to handle:
+- taxonName doesn't match when it should (eg. Sterna, Sternaspis)
+- 
+ */
+function startUp() {
+    const objUrlParams = new URLSearchParams(window.location.search);
+    siteName = objUrlParams.get('siteName');
+    console.log('Query Param siteName:', siteName);
+    siteName = siteName ? siteName : 'val';
+    const taxonName = objUrlParams.get('taxonName');
+    console.log('Query Param taxonName:', taxonName);
+    const taxonRank = objUrlParams.get('taxonRank');
+    console.log('Query Param taxonRank:', taxonRank);
+    const taxonKey = objUrlParams.get('taxonKey');
+    console.log('Query Param taxonKey:', taxonKey);
+    const wikiName = objUrlParams.get('wikiName');
+    console.log('Query Param wikiName:', wikiName);
+
+    import(`../VAL_Web_Utilities/js/gbifDataConfig.js?siteName=${siteName}`)
+        .then(async fileConfig => {
+        console.log('valSpeciesPage | siteName:', siteName, 'dataConfig:', fileConfig.dataConfig);
+        
+        if (taxonKey) {
+            let taxonObj = await getGbifTaxonObjFromKey(taxonKey);
+            if (!taxonName) {taxonName = taxonObj.canonicalName;}
+            //if (!taxonRank) {taxonRank = taxonObj.rank;}
+            fillTaxonStats(taxonKey, taxonName, taxonObj, wikiName, fileConfig);
+            gbifCountsByMonthByTaxonKey(taxonKey, 'speciesCountsByMonth', fileConfig);
+            gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
+            inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut', false, fileConfig.dataConfig.inatProject)
+            getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing');
+            gbifInfo.then(info => {
+                if (info.total < 9900) {
+                    if (initObsTab(1)) {
+                        loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`, 'occMap', fileConfig);
+                    }
+                } else {
+                    initObsTab(0);
+                    console.log(`Can't load observations. Too many to plot. (${info.total})`);
+                }
+            })
+        } else if (taxonName) {
+            let taxObj = await getGbifTaxonObjFromName(taxonName, taxonRank);
+        }
+        else {
+            let qryMsg = `Call page with one query parameter - a single taxon or binomial 'Genus species' like '?taxonName=Rattus norvegicus'` 
+            console.log(qryMsg);
+            alert(qryMsg);
         }
     })
-} else {
-    let qryMsg = `Call page with one query parameter - a single taxon or binomial 'Genus species' like '?taxonName=Rattus norvegicus'` 
-    console.log(qryMsg);
-    alert(qryMsg);
 }
 
 //This just initializes the occurrence map tab. The map is shown by clicking its tab, handled with inline script in html.
@@ -260,4 +287,5 @@ function initObsTab(show=1) {
     if (eleTab) {
         eleTab.style.display = show ? 'block' : 'none';
     }
+    return (eleTab && show);
 }

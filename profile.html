@@ -24,7 +24,7 @@
     <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-	<script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
+	<script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
     <script src="https://d3js.org/d3.v6.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
     <script src="../VAL_Web_Utilities/js/moment.min.js"></script>
@@ -35,7 +35,7 @@
 </head>
 
 <header>
-    <h3 class="topMenu">Vermont Atlas of Life</h3>
+    <h3 class="topMenu" id="pageTitle">Vermont Atlas of Life</h3>
     <hr>
 </header>
 
@@ -68,9 +68,9 @@
                         <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>VT List:</b></label><label id="TndE" class="speciesStatsValue"></label></div>
                     </div>
                     <div class="col-lg-6" id="divTopStats" class="speciesStats">
-                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Vermont Records:</b></label><label id="vtRec" class="speciesStatsValue"></label></div>
-                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>First VT Record:</b></label><label id="fsRec" class="speciesStatsValue"></label></div>
-                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Last VT Record:</b></label><label id="lsRec" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel" id="vtLbl"><b>Vermont Records:</b></label><label id="vtRec" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel" id="fsLbl"><b>First VT Record:</b></label><label id="fsRec" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel" id="lsLbl"><b>Last VT Record:</b></label><label id="lsRec" class="speciesStatsValue"></label></div>
                     </div>
                 </div>
                 <div class="row taxonDetailBottom">
