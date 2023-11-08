@@ -15,8 +15,8 @@ async function fetchAllByName(taxonName, fileConfig) {
 function fetchAll(searchTerm, fileConfig=false) {
     let qrys = [];
     if (fileConfig) {
-        qrys = fileConfig.predicateToQueries(fileConfig.dataConfig.rootPredicate);
-        //console.log('gbifCountsByDate.js | rootPredicate converted to http query parameters:', qrys);
+        //For Atlas query filters defined by taxa, since searchTerm is a taxon, remove Atlas query taxon filters
+        qrys = fileConfig.predicateToQueries(fileConfig.dataConfig.rootPredicate, true);
     }
     let urls = [];
     if (qrys.length) {
@@ -30,7 +30,7 @@ function fetchAll(searchTerm, fileConfig=false) {
         `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&${searchTerm}&facet=eventDate&facetLimit=1200000&limit=0`
         ]
     }
-    let all = Promise.all([fetch(encodeURI(urls[0])),fetch(encodeURI(urls[1]))])
+    let all = Promise.all(urls.map(url => fetch(encodeURI(url))))
         .then(responses => {
             //console.log(`gbifCountsByDate::fetchAll(${searchTerm}) RAW RESULT:`, responses);
             //Convert each response to json object

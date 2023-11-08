@@ -16,6 +16,7 @@ import {
     gbifCountsByMonthByTaxonKey,
     gbifCountsByMonthByTaxonName
     } from './gbifCountsByMonth.js'
+import { dataConfig } from '../VAL_Web_Utilities/js/gbifDataConfig.js';
 
 const nFmt = new Intl.NumberFormat();
 
@@ -88,7 +89,9 @@ function test() {
         })
         let parent = await findParentNameRank('Laridae', 'FAMILY', 373567);
         console.log(`findParentNameRank`, parent)
-*/
-        pre.innerHTML += getParentRank('family');
+        pre.innerHTML += getParentRank('family');*/
+
+        let qrys = fileConfig.predicateToQueries(dataConfig.rootPredicate);
+        pre.innerHTML += jArrFormat(qrys);
     })
 }
