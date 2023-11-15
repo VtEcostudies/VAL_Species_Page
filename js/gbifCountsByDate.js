@@ -86,7 +86,7 @@ export async function gbifCountsByDateByTaxonKey(taxonKey, fileConfig) {
 export async function gbifCountsByDateByTaxonName(taxonName, fileConfig) {
     return await fetchAllByName(taxonName, fileConfig);
 }
-
+/*
 export async function gbifCountsByDate(taxonName, fileConfig) {
 
     let taxonKey = await getGbifTaxonKeyFromName(taxonName, fileConfig);
@@ -97,3 +97,4 @@ export async function gbifCountsByDate(taxonName, fileConfig) {
         return await fetchAllByName(taxonName, fileConfig);
     }
 }
+*/

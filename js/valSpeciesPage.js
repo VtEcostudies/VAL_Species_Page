@@ -12,10 +12,11 @@ import { getGbifTaxonObjFromName, getGbifTaxonObjFromKey, getParentRank } from '
 
 var gbifInfo = false; //gbif occurrence query promise shared to handle in multiple sections
 var siteName = false;
+var profileUrl = false;
 
 startUp();
 
-async function fillTaxonStats(taxonKey, taxonName, taxonObj, wikiName=false, fileConfig) {
+async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiName=false) {
     let dataConfig = fileConfig.dataConfig;
     const exploreUrl = dataConfig.exploreUrl;
     const resultsUrl = dataConfig.resultsUrl;
@@ -243,47 +244,57 @@ function startUp() {
     siteName = objUrlParams.get('siteName');
     console.log('Query Param siteName:', siteName);
     siteName = siteName ? siteName : 'val';
-    const taxonName = objUrlParams.get('taxonName');
+    var taxonName = objUrlParams.get('taxonName');
     console.log('Query Param taxonName:', taxonName);
-    const taxonRank = objUrlParams.get('taxonRank');
+    var taxonRank = objUrlParams.get('taxonRank');
     console.log('Query Param taxonRank:', taxonRank);
-    const taxonKey = objUrlParams.get('taxonKey');
+    var taxonKey = objUrlParams.get('taxonKey');
     console.log('Query Param taxonKey:', taxonKey);
-    const wikiName = objUrlParams.get('wikiName');
+    var wikiName = objUrlParams.get('wikiName');
     console.log('Query Param wikiName:', wikiName);
 
     import(`../VAL_Web_Utilities/js/gbifDataConfig.js?siteName=${siteName}`)
         .then(async fileConfig => {
         console.log('valSpeciesPage | siteName:', siteName, 'dataConfig:', fileConfig.dataConfig);
+        profileUrl = fileConfig.dataConfig.profileUrl;
+        let taxonObj = false;
         
         if (taxonKey) {
             let taxonObj = await getGbifTaxonObjFromKey(taxonKey);
             if (!taxonName) {taxonName = taxonObj.canonicalName;}
-            //if (!taxonRank) {taxonRank = taxonObj.rank;}
-            fillTaxonStats(taxonKey, taxonName, taxonObj, wikiName, fileConfig);
-            gbifCountsByMonthByTaxonKey(taxonKey, 'speciesCountsByMonth', fileConfig);
-            gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
-            inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut', false, fileConfig.dataConfig.inatProject)
-            getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
-            gbifInfo.then(info => {
-                if (info.total < 9900) {
-                    if (initObsTab(1)) {
-                        loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`, 'occMap', fileConfig);
-                    }
-                } else {
-                    initObsTab(0);
-                    console.log(`Can't load observations. Too many to plot. (${info.total})`);
-                }
-            })
-        } else if (taxonName) {
-            let taxObj = await getGbifTaxonObjFromName(taxonName, taxonRank);
-        }
-        else {
-            let qryMsg = `Call page with one query parameter - a single taxon or binomial 'Genus species' like '?taxonName=Rattus norvegicus'` 
+            fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
+        } else if (taxonName && taxonRank) {
+            let taxonObj = await getGbifTaxonObjFromName(taxonName, taxonRank);
+            taxonKey = taxonObj.nubKey ? taxonObj.nubKey : (taxonObj.key ? taxonObj.key : false);
+            fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
+        } else {
+            let qryMsg = 'Call page with query parameters as follows:<br>';
+            qryMsg += `With eg. <a href="${profileUrl}?taxonKey=5761">?taxonKey=5761</a><br>`
+            qryMsg += `A single taxonName or binomial 'Genus species' like <a href="${profileUrl}?taxonName=Danaus plexippus">'?taxonName=Rattus norvegicus'</a><br>`;
+            qryMsg += `Include eg. <a href="${profileUrl}?taxonName=Danaus&taxonRank=GENUS">&taxonRank=GENUS to resolve name ambiguities</a><br>`
             console.log(qryMsg);
             alert(qryMsg);
         }
     })
+}
+
+function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {
+    fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
+    gbifCountsByMonthByTaxonKey(taxonKey, 'speciesCountsByMonth', fileConfig);
+    gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
+    inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut', false, fileConfig.dataConfig.inatProject)
+    getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
+    gbifInfo.then(info => {
+        if (info.total < 9900) {
+            if (initObsTab(1)) {
+                loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`, 'occMap', fileConfig);
+            }
+        } else {
+            initObsTab(0);
+            console.log(`Can't load observations. Too many to plot. (${info.total})`);
+        }
+    })
+
 }
 
 //This just initializes the occurrence map tab. The map is shown by clicking its tab, handled with inline script in html.
