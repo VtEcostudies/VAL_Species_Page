@@ -4,6 +4,7 @@ import { gbifCountsByYearByTaxonKey, gbifCountsByYearByTaxonName } from './gbifC
 import { gbifCountsByMonthByTaxonKey, gbifCountsByMonthByTaxonName } from './gbifCountsByMonth.js'
 import { gbifCountsByDateByTaxonKey, gbifCountsByDateByTaxonName } from './gbifCountsByDate.js';
 import { getStoredData } from './fetchSpeciesData.js';
+import { getGbifSynonymsByTaxonKey } from '../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { getWikiHtmlPage, getWikiSummary } from '../VAL_Web_Utilities/js/wikiPageData.js';
 import { getInatSpecies } from '../VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
@@ -13,6 +14,7 @@ import { getGbifTaxonObjFromName, getGbifTaxonObjFromKey, getParentRank } from '
 var gbifInfo = false; //gbif occurrence query promise shared to handle in multiple sections
 var siteName = false;
 var profileUrl = false;
+var inatWiki = false;
 
 startUp();
 
@@ -33,14 +35,13 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     eleLsL.innerText = `Last ${dataConfig.atlasAbbrev} Record:`;
 
     let eleComn = document.getElementById("common");
-    let eleRank = document.getElementById("trank");
     let eleTaxn = document.getElementById("taxon");
+    let eleSyns = document.getElementById("tSyns");
     let eleSrnk = document.getElementById("srank");
     let eleSgcn = document.getElementById("sgcn");
     let eleIucn = document.getElementById("iucn");
     let elelTnE = document.getElementById("teLbl"); //regional Threatened and Endangered listings label
     let eleTndE = document.getElementById("TndE"); //regional Threatened and Endangered listings value
-    let eleVern = document.getElementById("vName");
     let eleImag = document.getElementById("iconicImage");
     let eleAttr = document.getElementById("iconicImageAttrib");
     let eleFrst = document.getElementById("fsRec");
@@ -49,39 +50,40 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     let eleWiki = document.getElementById("wikiText");
     let eleMore = document.getElementById("wikiPageHtml");
     let htmlWait = `&nbsp<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
-    //eleRank.innerText = `${taxonObj.rank}`;
-    eleTaxn.innerText = `(${taxonObj.rank} ${taxonName})`;
+    eleTaxn.innerHTML = `<u>${taxonName}</u> (${taxonObj.rank}: ${taxonObj.taxonomicStatus})`;
     eleSrnk.innerHTML = htmlWait;
     eleIucn.innerHTML = htmlWait;
     eleTndE.innerHTML = htmlWait;
     eleFrst.innerHTML = htmlWait;
     eleLast.innerHTML = htmlWait;
     eleRecs.innerHTML = htmlWait;
-    if (eleVern) {eleVern.innerHTML = `<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;}
+    eleComn.innerHTML = taxonObj.vernacularName ? taxonObj.vernacularName : '';
     elelTnE.style.display = fileConfig.dataConfig.atlasAdmin ? elelTnE.style.display : 'none';
     eleTndE.style.display = fileConfig.dataConfig.atlasAdmin ? eleTndE.style.display : 'none';
     elelTnE.innerText = `${fileConfig.dataConfig.atlasAdmin} List:`;
-    getStoredData("sheetSranks")
-        .then(sheetSranks => {
+    let shtInfo = getStoredData("sheetSranks");
+    shtInfo.then(sheetSranks => {
             let ssr = sheetSranks[taxonName] ? sheetSranks[taxonName] : false;
             let tne = (ssr ? (ssr.TandE ? ssr.TandE : false) : false);
             eleSrnk.innerHTML = '&nbsp' + (ssr ? ssr.S_RANK : 'N/A');
             eleSgcn.innerHTML = (ssr ? (ssr.SGCN ? `&nbsp~&nbsp${ssr.SGCN}` : '') : '');
             eleTndE.innerHTML = '&nbsp' + (tne ? ('T'==tne ? 'Threatened' : ('E'==tne ? 'Endangered' : 'N/A')) : 'N/A');
-            if (eleVern) eleVern.innerHTML = '&nbsp' + (ssr ? ssr.COMMON_NAME : '');
-            if (eleComn) eleComn.innerHTML = (ssr ? ssr.COMMON_NAME : '');
         })
-    /*
-    let taxonKey = getGbifTaxonKeyFromName(taxonName);
-    let gbif = new Promise((resolve,reject) => { //wrap 2 calls in a Promise to pull branching result outside and handle singly, below, with gbif.then...
-        taxonKey.then(taxonKey => {
-            resolve(gbif = gbifCountsByDateByTaxonKey(taxonKey, fileConfig));
-        });
-        taxonKey.catch(err => {
-            resolve(gbif = gbifCountsByDateByTaxonName(taxonName, fileConfig));
-        });
-    });
-    */
+    let synRank = taxonObj.rank;
+    if ('SPECIES' == taxonObj.rank || 'SUBSPECIES' == taxonObj.rank) {synRank = 0;} //this allows SUBSEPECIES synonyms to be list for SPECIES
+    let syns = getGbifSynonymsByTaxonKey(taxonKey, synRank, fileConfig); //O'E, only list same-rank synonyms (too messy to include for higher ranks)
+    syns.then(syns => {
+        let html = '';
+        syns.synonyms.forEach(syn => {
+            html += ` ~ <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.rank}: ${syn.taxonomicStatus})`;
+        })
+        //if (eleSyns) {eleSyns.innerHTML = html;}
+        eleTaxn.innerHTML += html;
+    })
+    if (taxonObj.accepted) {
+        let html = ` ~ <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonObj.acceptedKey}">${taxonObj.accepted}</a> (ACCEPTED)`;
+        eleTaxn.innerHTML += html;
+    }
     let gbif = gbifCountsByDateByTaxonKey(taxonKey, fileConfig);
     gbifInfo = gbif;
     gbif.then(gbif => {
@@ -93,24 +95,9 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
         let Lmon = (gbif.max > 0) ? moment.utc(gbif.max).format("M") : '';
         let Lyer = (gbif.max > 0) ? moment.utc(gbif.max).format("YYYY") : '';
         let Ldat = (gbif.max > 0) ? moment.utc(gbif.max).format("YYYY-MM-DD") : '';
-        //eleFrst.innerHTML = `&nbsp${Frst}`;
-        //eleLast.innerHTML = `&nbsp${Last}`;
-        //taxonKey.then(taxonKey => {
-            eleRecs.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&view=MAP">${nFmt.format(gbif.total)}</a>`;
-            eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&gbif-year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
-            eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?taxonKey=${taxonKey}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
-        /*
-            //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Fdat}">${Frst}</a>`
-            //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
-        });
-        taxonKey.catch(err => {
-            eleRecs.innerHTML = `&nbsp<a href="${resultsUrl}?q=${taxonName}">${nFmt.format(gbif.total)}</a>`;
-            eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?q=${taxonName}&gbif-year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
-            //eleFrst.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&q=${taxonName}&event_date=${Fdat}">${Frst}</a>`
-            eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?q=${taxonName}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
-            //eleLast.innerHTML = `&nbsp<a href="${gbifGadmVtOccUrl}&taxonKey=${taxonKey}&event_date=${Ldat}">${Last}</a>`
-        })
-        */
+        eleRecs.innerHTML = `&nbsp<a href="${exploreUrl}?${gbif.search}&view=MAP">${nFmt.format(gbif.total)}</a>`;
+        eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?${gbif.search}&gbif-year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+        eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?${gbif.search}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
     });
     let inat = await getInatSpecies(taxonName, taxonObj.rank, taxonObj.parent, getParentRank(taxonObj.rank));
     if (!wikiName && inat.wikipedia_url) {
@@ -119,18 +106,31 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     let wiki = await getWikiSummary(wikiName ? wikiName : taxonName);
     if (wikiName && !wiki.extract_html) { //sometimes an inat common name fails (eg. Cerma cora). try taxonName.
         console.log(`fillTaxonStats | getWikiSummary(${wikiName ? wikiName : taxonName}) failed. Trying getWikiSummary(${taxonName}).`)
-        wikiName = false; //remove this bad value for 2nd wiki html page call below.
+        //wikiName = false; //remove this bad value for 2nd wiki html page call below.
+        inatWiki = true; //BS klugey flag...
         wiki = await getWikiSummary(taxonName);
     }
     if (eleWiki && wiki.extract_html) {
         eleWiki.innerHTML = wiki.extract_html;
     }
+    if (eleWiki) {
+        //Use Synonyms to look for wikipedia alternate content:
+        syns.then(syns => {
+            let html = '';
+            syns.synonyms.forEach(syn => {
+                if (syn.canonicalName != wikiName) {
+                    html += `Wikipedia for synonym <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonKey}&taxonName=${taxonName}&wikiName=${syn.canonicalName}">${syn.canonicalName}</a><br>`
+                }
+            })
+            if (html) {eleWiki.innerHTML += html;}
+        })
+    }
     if (eleImag) {
-        //taxonKey.then(taxonKey => {
-            let imagLink = `${exploreUrl}?taxonKey=${taxonKey}&view=GALLERY`;
+        gbif.then(gbif => {
+            let imagLink = `${exploreUrl}?${gbif.search}&view=GALLERY`;
             eleImag.addEventListener("click", (e) => {location.assign(imagLink)});
             eleImag.classList.add("pointer");
-        //});
+        });
         if (inat.default_photo) {
             eleImag.src = inat.default_photo.medium_url;
             eleAttr.innerHTML = inat.default_photo.attribution;
@@ -138,9 +138,19 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
             eleImag.classList.add("pointer");
         }
     }
-    if (inat.preferred_common_name) {
+    /*
+    shtInfo.then(sheetData => { //wait for VAL Google Doc sheet info, then check inat common name
+        let ssr = sheetData[taxonName] ? sheetData[taxonName] : false;
+        let vnr = ssr ? ssr.COMMON_NAME : false;
+        if (!taxonObj.vernacularName && !vnr && inat.preferred_common_name) {
+            console.log('fillTaxonStats | Common Name from inat preferred_common_name:', inat.preferred_common_name);
+            if (eleComn) eleComn.innerHTML = `${inat.preferred_common_name} (inat)`;
+        }
+    })
+    */
+    if (!taxonObj.vernacularName && inat.preferred_common_name) {
         console.log('fillTaxonStats | Common Name from inat preferred_common_name:', inat.preferred_common_name);
-        if (eleVern) eleVern.innerHTML = inat.preferred_common_name;
+        //alert(`fillTaxonStats | Common Name from inat preferred_common_name: ${inat.preferred_common_name}`);
         if (eleComn) eleComn.innerHTML = inat.preferred_common_name;
     }
     if (eleIucn) {
@@ -167,9 +177,9 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
         let rowLast1 = document.getElementById("wikiPageRowLastCol1");
 
         const parser = new DOMParser();
-        let more = getWikiHtmlPage(wikiName ? wikiName : taxonName); //without await, async return is a promise
-        console.log(`getTaxonStats::getWikiHtmlPage(${wikiName ? wikiName : taxonName}) RESULT`, more.status, more.ok, more); //shows pending, then fulfilled
-        more.then(more => {
+        let page = getWikiHtmlPage(wikiName ? wikiName : taxonName); //without await, async return is a promise
+        console.log(`getTaxonStats::getWikiHtmlPage(${wikiName ? wikiName : taxonName}) RESULT`, page.status, page.ok, page); //shows pending, then fulfilled
+        page.then(more => {
             var hDom = parser.parseFromString(more, 'text/html');
             let ambiguous = more.includes('disambiguation') && more.includes('_disambigbox') && more.includes('dmbox-disambig');
             if (ambiguous) {
@@ -227,9 +237,10 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
         })
         .catch(err => {
             console.log(`fillTaxonStats ERROR:`,err);
+            //alert(`wikiName:${wikiName}, taxonName:${taxonName}`)
             let wikiLink = `${wikiPageUrl}${wikiName ? wikiName : taxonName}`;
             row1Col1.innerHTML = `No wikipedia page for <i>${wikiName ? wikiName : taxonName}</i>. 
-            You may create one at <a href="${wikiLink}">${wikiLink}</a>`;
+            You may create one at <a href="${wikiLink}">${wikiLink}</a><br>`;
         })
     }
 }
@@ -252,6 +263,8 @@ function startUp() {
     console.log('Query Param taxonKey:', taxonKey);
     var wikiName = objUrlParams.get('wikiName');
     console.log('Query Param wikiName:', wikiName);
+    inatWiki = objUrlParams.get('inatWiki');
+    console.log('Query Param inatWiki:', inatWiki);
 
     import(`../VAL_Web_Utilities/js/gbifDataConfig.js?siteName=${siteName}`)
         .then(async fileConfig => {

@@ -1,4 +1,6 @@
 import { getGbifTaxonKeyFromName } from "../VAL_Web_Utilities/js/commonUtilities.js";
+import { getListSubTaxonKeys } from "../VAL_Web_Utilities/js/gbifItemCounts.js";
+import { getGbifSpeciesByTaxonKey } from "../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 const facetQuery = '&facet=month&facetLimit=1200000&limit=0';
 
 /*
@@ -6,14 +8,19 @@ GBIF occurrence counts by month:
 https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus%20plexippus&facet=month&facetLimit=1200000&limit=0
 https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=false&scientificName=Danaus%20plexippus&facet=month&facetLimit=1200000&limit=0
 */
-export async function fetchAllGbifCountsByMonthByKey(taxonKey, fileConfig) {
-    return await fetchAllByKey(taxonKey, fileConfig);
-}
-export async function fetchAllGbifCountsByMonthByName(taxonName, fileConfig) {
-    return await fetchAllByName(taxonName, fileConfig);
-}
 async function fetchAllByKey(taxonKey, fileConfig) {
-    return await fetchAll(`taxonKey=${taxonKey}`, fileConfig);
+    let self = await getGbifSpeciesByTaxonKey(taxonKey); //retrieve species info for species-list taxonKey - to get nubKey for below
+    let subs = await getListSubTaxonKeys(fileConfig, taxonKey); //get sub-nubKeys of species-list key
+    let srch = `taxonKey=${self.nubKey ? self.nubKey : taxonKey}`;
+    for (const key of subs.keys) {
+        srch += `&taxonKey=${key}`;
+    }
+    console.log(`gbifCountsByMonthByTaxonKey(${taxonKey}) | self-nubKey:`, self.nubKey, 'sub-nubKeys:', subs.keys, 'searchTerm:', srch);
+    
+    let res = await fetchAll(srch, fileConfig);
+    res.keys = subs.keys.push(self.nubKey); //add self nubKey to array of keys for species-list key
+    res.search = srch; //return our enhanced searchTerm for caller to use
+    return res;
 }
 async function fetchAllByName(taxonName, fileConfig) {
     return await fetchAll(`scientificName=${taxonName}`, fileConfig);
@@ -176,39 +183,5 @@ function monthName(i) {
         case 10: return ['Oct','October'];
         case 11: return ['Nov','November'];
         case 12: return ['Dec','December'];
-    }
-}
-
-/*
-    Unused function originally developed to query one URL. Replaced with fetchAll
-*/
-async function fetchData(taxonName) {
-    let urls = [
-        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`,
-        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&scientificName=${taxonName}&facet=month&facetLimit=1200000&limit=0`
-        ]
-    let enc = encodeURI(urls[0]);
-    try {
-        let res = await fetch(enc);
-        console.log(`gbifCountsByMonth(${enc}) RAW RESULT:`, res);
-        let json = await res.json();
-        console.log(`gbifCountsByMonth(${enc}) JSON RESULT:`, json);
-
-        let total = json.count;
-        let counts = json.facets[0].counts;
-        let max = 0;
-        counts = counts.map(data => {
-            let i = Number(data.name), c = data.count, m = monthName(i)[0];
-            let o = {'index':i, 'name':m, 'count':c};
-            max = data.count > max ? data.count : max;
-            return o;
-        });
-        console.log('GBIF counts by month sorted by count:', counts);
-        counts.sort((a,b) => {return a.index > b.index;})
-        console.log('GBIF counts by month sorted by month:', counts);
-        return {total:total, max:max, counts:counts};
-    } catch (err) {
-        console.log(`gbifCountsByMonth(${enc}) ERROR:`, err);
-        return new Error(err);
     }
 }

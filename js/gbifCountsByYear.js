@@ -1,4 +1,6 @@
 import { getGbifTaxonKeyFromName } from "../VAL_Web_Utilities/js/commonUtilities.js";
+import { getListSubTaxonKeys } from "../VAL_Web_Utilities/js/gbifItemCounts.js";
+import { getGbifSpeciesByTaxonKey } from "../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 const facetQuery = '&facet=year&facetLimit=1200000&limit=0';
 
 /*
@@ -7,10 +9,21 @@ https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus
 https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=false&scientificName=Danaus%20plexippus&facet=year&facetLimit=1200000&limit=0
 */
 async function fetchAllByKey(taxonKey, fileConfig) {
-    return await fetchAll(`taxonKey=${taxonKey}`, fileConfig);
+    let self = await getGbifSpeciesByTaxonKey(taxonKey); //retrieve species info for species-list taxonKey - to get nubKey for below
+    let subs = await getListSubTaxonKeys(fileConfig, taxonKey); //get sub-nubKeys of species-list key
+    let srch = `taxonKey=${self.nubKey ? self.nubKey : taxonKey}`;
+    for (const key of subs.keys) {
+        srch += `&taxonKey=${key}`;
+    }
+    console.log(`gbifCountsByYearByTaxonKey(${taxonKey}) | self-nubKey:`, self.nubKey, 'sub-nubKeys:', subs.keys, 'searchTerm:', srch);
+    
+    let res = await fetchAll(srch, fileConfig);
+    res.keys = subs.keys.push(self.nubKey); //add self nubKey to array of keys for species-list key
+    res.search = srch; //return our enhanced searchTerm for caller to use
+    return res;
 }
 async function fetchAllByName(taxonName, fileConfig) {
-    return await fetchAll(`taxonKey=${taxonKey}`, fileConfig);
+    return await fetchAll(`scientificName=${taxonName}`, fileConfig);
 }
 function fetchAll(searchTerm, fileConfig) {
     let qrys = [];
