@@ -29,7 +29,7 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     let eleVtL = document.getElementById("vtLbl");
     let eleFsL = document.getElementById("fsLbl");
     let eleLsL = document.getElementById("lsLbl");
-    eleTtl.innerText = `${dataConfig.atlasName}`;
+    eleTtl.innerHTML = `<a href="/index.html">${dataConfig.atlasName}</a>`;
     eleVtL.innerText = `${dataConfig.atlasPlace} Records:`;
     eleFsL.innerText = `First ${dataConfig.atlasAbbrev} Record:`;
     eleLsL.innerText = `Last ${dataConfig.atlasAbbrev} Record:`;
