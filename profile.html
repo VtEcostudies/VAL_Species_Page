@@ -48,14 +48,14 @@
                 <label id="tSyns" class="speciesTaxon"></label>
             </div>
         <hr>
-        <div class="row">
-            <div class="col-lg-6" id="divTopImage">
-                <img src="" id="iconicImage" class="iconicImage" />
+        <div class="row rowTopContent" id="rowTopContent">
+            <div class="col-lg-6 bottom-align colTopContent" id="colTopImage">
+                <img src="" id="iconicImage" class="bottom-align iconicImage" />
                 <label id="iconicImageAttrib" class="imageAttrib"></label>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-6 colTopContent" id="colTopStats">
                 <div class="row">
-                    <div class="col-lg-6" id="divTopStats" class="speciesStats">
+                    <div class="col-lg-4" id="divTopStats" class="speciesStats">
                         <div class="speciesStatsBlock">
                             <b><label class="speciesStatsLabel">S-Rank:</label></b>
                             <label id="srank" class="speciesStatsValue"></label>
@@ -64,7 +64,7 @@
                         <div class="speciesStatsBlock"><b><label class="speciesStatsLabel">IUCN:</label></b><label id="iucn" class="speciesStatsValue"></label></div>
                         <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="teLbl">VT List:</label></b><label id="TndE" class="speciesStatsValue"></label></div>
                     </div>
-                    <div class="col-lg-6" id="divTopStats" class="speciesStats">
+                    <div class="col-lg-8" id="divTopStats" class="speciesStats">
                         <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="vtLbl">Vermont Records:</label></b><label id="vtRec" class="speciesStatsValue"></label></div>
                         <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="fsLbl">First VT Record:</label></b><label id="fsRec" class="speciesStatsValue"></label></div>
                         <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="lsLbl">Last VT Record:</label></b><label id="lsRec" class="speciesStatsValue"></label></div>
@@ -78,6 +78,7 @@
                     </div>
                     <div id="Phenology" class="tabContentTop">
                         <div id="speciesCountsByMonth" class=""></div>
+                        <div id="speciesCountsByWeek" class=""></div>
                     </div>
                     <div id="History" class="tabContentTop">
                         <div id="speciesCountsByYear" class=""></div>
