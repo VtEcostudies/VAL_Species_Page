@@ -36,7 +36,6 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
 
     let eleComn = document.getElementById("common");
     let eleTaxn = document.getElementById("taxon");
-    let eleSyns = document.getElementById("tSyns");
     let eleSrnk = document.getElementById("srank");
     let eleSgcn = document.getElementById("sgcn");
     let eleIucn = document.getElementById("iucn");
@@ -50,7 +49,7 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     let eleWiki = document.getElementById("wikiText");
     let eleMore = document.getElementById("wikiPageHtml");
     let htmlWait = `&nbsp<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
-    eleTaxn.innerHTML = `<u>${taxonName}</u> (${taxonObj.rank}: ${taxonObj.taxonomicStatus})`;
+    eleTaxn.innerHTML = `${taxonObj.rank} <u>${taxonName}</u> (${taxonObj.taxonomicStatus})`;
     eleSrnk.innerHTML = htmlWait;
     eleIucn.innerHTML = htmlWait;
     eleTndE.innerHTML = htmlWait;
@@ -58,6 +57,7 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     eleLast.innerHTML = htmlWait;
     eleRecs.innerHTML = htmlWait;
     eleComn.innerHTML = taxonObj.vernacularName ? taxonObj.vernacularName : '';
+    if (taxonObj.vernacularName) {eleComn.title = `Vernacular Name from GBIF species-list`;}
     elelTnE.style.display = fileConfig.dataConfig.atlasAdmin ? elelTnE.style.display : 'none';
     eleTndE.style.display = fileConfig.dataConfig.atlasAdmin ? eleTndE.style.display : 'none';
     elelTnE.innerText = `${fileConfig.dataConfig.atlasAdmin} List:`;
@@ -75,9 +75,8 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     syns.then(syns => {
         let html = '';
         syns.synonyms.forEach(syn => {
-            html += ` ~ <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.rank}: ${syn.taxonomicStatus})`;
+            html += ` ~ ${syn.rank} <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.taxonomicStatus})`;
         })
-        //if (eleSyns) {eleSyns.innerHTML = html;}
         eleTaxn.innerHTML += html;
     })
     if (taxonObj.accepted) {
@@ -149,9 +148,8 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     })
     */
     if (!taxonObj.vernacularName && inat.preferred_common_name) {
-        console.log('fillTaxonStats | Common Name from inat preferred_common_name:', inat.preferred_common_name);
-        //alert(`fillTaxonStats | Common Name from inat preferred_common_name: ${inat.preferred_common_name}`);
-        if (eleComn) eleComn.innerHTML = inat.preferred_common_name;
+        eleComn.innerHTML = inat.preferred_common_name;
+        eleComn.title = `Vernacular Name from iNat API - preferred_common_name`;
     }
     if (eleIucn) {
         eleIucn.innerHTML = '&nbspN/A';

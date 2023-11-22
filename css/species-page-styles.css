@@ -43,21 +43,15 @@ header {
 .taxonDetailBottom {
     padding-top: 20px;
     padding-right: 15px;
-}
-/*
-.iconicImage {
-    width: 100%;
-    height: 100%; 
-    max-height: 600px;
-}
-*/
-
-.imageAttrib {
-    font-size: x-small;
+    margin-bottom: 15px;
 }
 
 .colTopContent {
-  margin-bottom:10px;
+  margin-bottom: 5px;
+}
+
+.iconicImage {
+  max-height: 500px;
 }
 
 /* Custom CSS to align image content to the bottom of a column */
@@ -72,6 +66,9 @@ header {
 }
 /* End Custom CSS to align image content to the bottom of a column */
 
+.imageAttrib {
+  font-size: x-small;
+}
 .speciesDistribution {
     width: 67%;
 }
