@@ -10,10 +10,13 @@ https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=fa
 */
 async function fetchAllByKey(taxonKey, fileConfig) {
     let self = await getGbifSpeciesByTaxonKey(taxonKey); //retrieve species info for species-list taxonKey - to get nubKey for below
-    let subs = await getListSubTaxonKeys(fileConfig, taxonKey); //get sub-nubKeys of species-list key
     let srch = `taxonKey=${self.nubKey ? self.nubKey : taxonKey}`;
-    for (const key of subs.keys) {
-        srch += `&taxonKey=${key}`; //add sub-nubKeys to searchTerm to be used by fetchAll
+    let subs = {keys:[]};
+    if (['GENUS','SPECIES','SUBSPECIES','VARIETY'].includes(self.rank)) {
+        subs = await getListSubTaxonKeys(fileConfig, taxonKey); //get sub-nubKeys of species-list key
+        for (const key of subs.keys) {
+            srch += `&taxonKey=${key}`; //add sub-nubKeys to searchTerm to be used by fetchAll
+        }
     }
     console.log(`gbifCountsByDateByTaxonKey(${taxonKey}) | self-nubKey:`, self.nubKey, 'sub-nubKeys:', subs.keys, 'searchTerm:', srch);
     

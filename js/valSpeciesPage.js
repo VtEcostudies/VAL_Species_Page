@@ -74,10 +74,12 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     let syns = getGbifSynonymsByTaxonKey(taxonKey, synRank, fileConfig); //O'E, only list same-rank synonyms (too messy to include for higher ranks)
     syns.then(syns => {
         let html = '';
-        syns.synonyms.forEach(syn => {
-            html += ` ~ ${syn.rank} <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.taxonomicStatus})`;
-        })
-        eleTaxn.innerHTML += html;
+        if (syns.synonyms) {
+            syns.synonyms.forEach(syn => {
+                html += ` ~ ${syn.rank} <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.taxonomicStatus})`;
+            })
+            eleTaxn.innerHTML += html;
+        }
     })
     if (taxonObj.accepted) {
         let html = ` ~ <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonObj.acceptedKey}">${taxonObj.accepted}</a> (ACCEPTED)`;
@@ -137,16 +139,6 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
             eleImag.classList.add("pointer");
         }
     }
-    /*
-    shtInfo.then(sheetData => { //wait for VAL Google Doc sheet info, then check inat common name
-        let ssr = sheetData[taxonName] ? sheetData[taxonName] : false;
-        let vnr = ssr ? ssr.COMMON_NAME : false;
-        if (!taxonObj.vernacularName && !vnr && inat.preferred_common_name) {
-            console.log('fillTaxonStats | Common Name from inat preferred_common_name:', inat.preferred_common_name);
-            if (eleComn) eleComn.innerHTML = `${inat.preferred_common_name} (inat)`;
-        }
-    })
-    */
     if (!taxonObj.vernacularName && inat.preferred_common_name) {
         eleComn.innerHTML = inat.preferred_common_name;
         eleComn.title = `Vernacular Name from iNat API - preferred_common_name`;
