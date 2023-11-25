@@ -9,7 +9,7 @@ import { getWikiHtmlPage, getWikiSummary } from '../VAL_Web_Utilities/js/wikiPag
 import { getInatSpecies } from '../VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
 import { inatTaxonObsDonut } from './inatTaxonObservationDonut.js';
-import { getGbifTaxonObjFromName, getGbifTaxonObjFromKey, getParentRank } from '../VAL_Web_Utilities/js/commonUtilities.js';
+import { getGbifTaxonKeyFromName, getGbifTaxonObjFromKey, getParentRank, parseNameToRank } from '../VAL_Web_Utilities/js/commonUtilities.js';
 
 var gbifInfo = false; //gbif occurrence query promise shared to handle in multiple sections
 var siteName = false;
@@ -259,26 +259,34 @@ function startUp() {
     import(`../VAL_Web_Utilities/js/gbifDataConfig.js?siteName=${siteName}`)
         .then(async fileConfig => {
         console.log('valSpeciesPage | siteName:', siteName, 'dataConfig:', fileConfig.dataConfig);
-        profileUrl = fileConfig.dataConfig.profileUrl;
-        let taxonObj = false;
-        
+        profileUrl = fileConfig.dataConfig.profileUrl;        
         if (taxonKey) {
             let taxonObj = await getGbifTaxonObjFromKey(taxonKey);
             if (!taxonName) {taxonName = taxonObj.canonicalName;}
             fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
-        } else if (taxonName && taxonRank) {
-            let taxonObj = await getGbifTaxonObjFromName(taxonName, taxonRank);
-            taxonKey = taxonObj.nubKey ? taxonObj.nubKey : (taxonObj.key ? taxonObj.key : false);
-            fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
+        } else if (taxonName) {
+            if (!taxonRank) {taxonRank = parseNameToRank(taxonName);}
+            let taxonKey = await getGbifTaxonKeyFromName(taxonName, taxonRank);
+            if (taxonKey) {
+                let taxonObj = await getGbifTaxonObjFromKey(taxonKey);
+                fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
+            }
+            else {
+                notFound(taxonKey, taxonName, taxonRank);
+            }
         } else {
-            let qryMsg = 'Call page with query parameters as follows:<br>';
-            qryMsg += `With eg. <a href="${profileUrl}?taxonKey=5761">?taxonKey=5761</a><br>`
-            qryMsg += `A single taxonName or binomial 'Genus species' like <a href="${profileUrl}?taxonName=Danaus plexippus">'?taxonName=Rattus norvegicus'</a><br>`;
-            qryMsg += `Include eg. <a href="${profileUrl}?taxonName=Danaus&taxonRank=GENUS">&taxonRank=GENUS to resolve name ambiguities</a><br>`
-            console.log(qryMsg);
-            alert(qryMsg);
+            notFound(taxonKey, taxonName, taxonRank);
         }
     })
+}
+function notFound(taxonKey, taxonName, taxonRank) {
+    let qryMsg = 'Call page with query parameters as follows:<br>';
+    qryMsg += `With eg. <a href="${profileUrl}?taxonKey=5761">?taxonKey=5761</a><br>`
+    qryMsg += `A single taxonName or binomial 'Genus species' like <a href="${profileUrl}?taxonName=Danaus plexippus">'?taxonName=Danaus plexippus'</a><br>`;
+    qryMsg += `Include eg. <a href="${profileUrl}?taxonName=Danaus&taxonRank=GENUS">&taxonRank=GENUS to resolve name ambiguities</a><br>`
+    console.log(qryMsg);
+    //alert(qryMsg);
+    document.getElementById("common").innerHTML = qryMsg;
 }
 
 function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {
