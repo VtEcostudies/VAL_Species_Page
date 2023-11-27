@@ -8,7 +8,7 @@ import { getGbifSynonymsByTaxonKey } from '../VAL_Web_Utilities/js/fetchGbifSpec
 import { getWikiHtmlPage, getWikiSummary } from '../VAL_Web_Utilities/js/wikiPageData.js';
 import { getInatSpecies } from '../VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
-import { inatTaxonObsDonut } from './inatTaxonObservationDonut.js';
+import { inatTaxonObsDonut } from '../VAL_Web_Utilities/js/inatTaxonObservationDonut.js';
 import { getGbifTaxonKeyFromName, getGbifTaxonObjFromKey, getParentRank, parseNameToRank } from '../VAL_Web_Utilities/js/commonUtilities.js';
 import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../VAL_Web_Utilities/js/gbifPhenologyModule.js';
 import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';;
@@ -299,7 +299,7 @@ function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {
     //gbifD3PhenologyByTaxonName(taxonName, 'speciesCountsByWeek', fileConfig);
     gbifD3PhenologyByTaxonKey(taxonKey, 'speciesCountsByWeek', fileConfig);
     gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
-    inatTaxonObsDonut(taxonName, 'inatTaxonObsDonut', false, fileConfig.dataConfig.inatProject)
+    inatTaxonObsDonut(taxonName, taxonObj.rank, 'inatTaxonObsDonut', false, fileConfig.dataConfig.inatProject)
     getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
     gbifInfo.then(info => {
         if (info.total < 9900) {
