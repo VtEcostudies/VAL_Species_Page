@@ -30,20 +30,22 @@
 	<script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
+
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
     <script src="../VAL_Web_Utilities/js/moment.min.js"></script>
     <script src="../VAL_Web_Utilities/js/purify.min.js"></script>
 
     <script type="module" src="js/valSpeciesPage.js"></script>
     <style>
-        .tooltip {
+        .d3tooltip {
             position: absolute;
-            background-color: white;
+            background-color: orange;
             border: 1px solid #ddd;
             padding: 8px;
             font-size: 14px;
             pointer-events: none;
             display: none;
+            z-index: 999999;
         }
     </style>
 
