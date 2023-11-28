@@ -2,6 +2,8 @@ import { getGbifTaxonKeyFromName } from "../VAL_Web_Utilities/js/commonUtilities
 import { getListSubTaxonKeys } from "../VAL_Web_Utilities/js/gbifItemCounts.js";
 import { getGbifSpeciesByTaxonKey } from "../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 const facetQuery = '&facet=year&facetLimit=1200000&limit=0';
+let searchTerm;
+let exploreUrl;
 
 /*
 GBIF occurrence counts by year:
@@ -20,12 +22,14 @@ async function fetchAllByKey(taxonKey, fileConfig) {
     }
     console.log(`gbifCountsByYearByTaxonKey(${taxonKey}) | self-nubKey:`, self.nubKey, 'sub-nubKeys:', subs.keys, 'searchTerm:', srch);
     
+    searchTerm = srch; exploreUrl = fileConfig.dataConfig.exploreUrl;
     let res = await fetchAll(srch, fileConfig);
     res.keys = subs.keys.push(self.nubKey); //add self nubKey to array of keys for species-list key
     res.search = srch; //return our enhanced searchTerm for caller to use
     return res;
 }
 async function fetchAllByName(taxonName, fileConfig) {
+    searchTerm = `scientificName=${taxonName}`; exploreUrl = fileConfig.dataConfig.exploreUrl;
     return await fetchAll(`scientificName=${taxonName}`, fileConfig);
 }
 function fetchAll(searchTerm, fileConfig) {
@@ -81,13 +85,11 @@ function fetchAll(searchTerm, fileConfig) {
             //console.log('GBIF counts by year sorted by count:', counts);
             counts.sort((a,b) => {return a.index > b.index;})
             //console.log('GBIF counts by year sorted by year:', counts);
-            //return Promise.resolve({total:total, max:max, counts:counts});
             return {total:total, max:max, counts:counts};
         })
         .catch(err => {
             console.log(`ERROR fetchAll ERROR:`, err);
-            //return Promise.reject(new Error(err));
-            return new Error(err);
+            return Promise.reject({'message':err.message});
         })
     console.log(`fetchAll promise.all`, all);
     return all; //this is how it's done. strange errors when not.
@@ -128,11 +130,20 @@ function gbifCountsByYear(data, htmlId) {
 
     // append the svg object to the body of the page
     const svg = d3.select(`#${htmlId}`)
-    .append("svg")
+        .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", `translate(${margin.left},${margin.top})`);
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Chart title
+    svg.append("text")
+        //.attr("x", width / 2 )
+        .attr("x", 150 )
+        .attr("y", 0)
+        .style("text-anchor", "middle")
+        //.text(`${taxonName} Observations by Year`)
+        .text(`GBIF Observations by Year`)
 
     // X axis
     var x = d3.scaleBand()
@@ -144,9 +155,9 @@ function gbifCountsByYear(data, htmlId) {
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(x))
         .selectAll("text")
-            //.attr("transform", "translate(-10, 0)rotate(-45)")
-            .attr("transform", "translate(-12, 5)rotate(-90)")
-            .style("text-anchor", "end");
+        //.attr("transform", "translate(-10, 0)rotate(-45)")
+        .attr("transform", "translate(-12, 5)rotate(-90)")
+        .style("text-anchor", "end");
 
     // Add Y axis
     var y = d3.scaleLinear()
@@ -160,17 +171,43 @@ function gbifCountsByYear(data, htmlId) {
         .data(data.counts)
         .enter()
         .append("rect")
-            .attr("x", function(d) { return x(d.name); })
-            .attr("y", function(d) { return y(d.count); })
-            .attr("width", x.bandwidth())
-            .attr("height", function(d) { return height - y(d.count); })
-            .attr("fill", "#69b3a2")
+        .attr("x", function(d) { return x(d.name); })
+        .attr("y", function(d) { return y(d.count); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return height - y(d.count); })
+        .attr("fill", "#69b3a2")
+        .on("mouseover", handleMouseOver)
+        .on("mouseout", handleMouseOut)
+        .on("click", handleClick)
+        .style("cursor", "pointer");
+        
+    let tooltip = d3.select(`#${htmlId}`).append("div").attr("class", "d3tooltip");;
 
-    svg.append("text")
-        //.attr("x", width / 2 )
-        .attr("x", 150 )
-        .attr("y", 0)
-        .style("text-anchor", "middle")
-        //.text(`${taxonName} Observations by Year`)
-        .text(`GBIF Observations by Year`)
+    // Mouseover event handler
+    function handleMouseOver(event, d) {
+        d3.select(this)
+            .attr("fill", "orange"); // Change color or add other effects on mouseover
+
+        // Display data in the console or update a tooltip
+        //console.log("Mouseover: ", d);
+
+        tooltip
+            .html(`Year: ${d.name}<br>Count: ${d.count}`)
+            .style("left", (event.pageX-80) + "px")
+            .style("top", (event.pageY-90) + "px")
+            .style("display", "block");
+    }
+    // Mouseout event handler
+    function handleMouseOut(event, d) {
+        d3.select(this)
+            .attr("fill", "#69b3a2"); // Change back to the original color on mouseout
+        
+        tooltip.style("display", "none");
+    }
+    // Click event handler
+    function handleClick(event, d) {
+        if (exploreUrl && searchTerm) {
+            window.open(`${exploreUrl}?${searchTerm}&year=${d.name}`);
+        }
+    }
 }
