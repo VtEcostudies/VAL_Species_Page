@@ -193,8 +193,8 @@ function gbifCountsByYear(data, htmlId) {
 
         tooltip
             .html(`Year: ${d.name}<br>Count: ${d.count}`)
-            .style("left", (event.pageX-80) + "px")
-            .style("top", (event.pageY-90) + "px")
+            .style("left", (event.pageX-50) + "px")
+            .style("top", (event.pageY-50) + "px")
             .style("display", "block");
     }
     // Mouseout event handler
