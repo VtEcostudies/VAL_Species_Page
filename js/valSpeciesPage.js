@@ -102,7 +102,7 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
         eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?${gbif.search}&gbif-year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
         eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?${gbif.search}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
     });
-    let inat = await getInatSpecies(taxonName, taxonObj.rank, taxonObj.parent, getParentRank(taxonObj.rank));
+    let inat; try {inat = await getInatSpecies(taxonName, taxonObj.rank, taxonObj.parent, getParentRank(taxonObj.rank));} catch(err) {inat={};}
     if (!wikiName && inat.wikipedia_url) {
         wikiName = inat.wikipedia_url.split('/').slice(-1);
     }

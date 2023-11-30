@@ -1,6 +1,7 @@
 import { getGbifTaxonKeyFromName } from "../VAL_Web_Utilities/js/commonUtilities.js";
 import { getListSubTaxonKeys } from "../VAL_Web_Utilities/js/gbifItemCounts.js";
 import { getGbifSpeciesByTaxonKey } from "../VAL_Web_Utilities/js/fetchGbifSpecies.js";
+import { getStoredData, setStoredData, getSetStoredData } from "../VAL_Web_Utilities/js/storedData.js";
 const facetQuery = '&facet=eventDate&facetLimit=1200000&limit=0';
 const drillRanks = ['GENUS','SPECIES','SUBSPECIES','VARIETY'];
 
@@ -22,6 +23,7 @@ async function fetchAllByKey(taxonKey, fileConfig) {
     console.log(`gbifCountsByDateByTaxonKey(${taxonKey}) | self-nubKey:`, self.nubKey, 'sub-nubKeys:', subs.keys, 'searchTerm:', srch);
     
     let res = await fetchAll(srch, fileConfig);
+    console.log(res);
     res.nubKey = self.nubKey;
     res.keys = subs.keys.push(self.nubKey); //add self nubKey to array of keys for species-list key
     res.names = subs.names;
@@ -31,12 +33,9 @@ async function fetchAllByKey(taxonKey, fileConfig) {
 async function fetchAllByName(taxonName, fileConfig) {
     return await fetchAll(`scientificName=${taxonName}`, fileConfig);
 }
-function fetchAll(searchTerm, fileConfig=false) {
-    let qrys = [];
-    if (fileConfig) {
-        //For Atlas query filters defined by taxa, since searchTerm is a taxon, remove Atlas query taxon filters
-        qrys = fileConfig.predicateToQueries(fileConfig.dataConfig.rootPredicate, true);
-    }
+async function fetchAll(searchTerm, fileConfig) {
+    //For Atlas query filters defined by taxa, since searchTerm is a taxon, remove Atlas query taxon filters
+    let qrys = fileConfig.predicateToQueries(fileConfig.dataConfig.rootPredicate, true);
     let urls = [];
     if (qrys.length) {
         for (const qry of qrys) {
@@ -49,6 +48,11 @@ function fetchAll(searchTerm, fileConfig=false) {
         `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&${searchTerm}&facet=eventDate&facetLimit=1200000&limit=0`
         ]
     }
+    /*
+    all = await getStoredData('gbifOccsByDate', searchTerm, urls);
+    console.log('gbifCountsByDate=>fetchAll | All: ', all)
+    if (all && null != all) {return Promise.resolve(all);} else {
+    */
     let all = Promise.all(urls.map(url => fetch(encodeURI(url))))
         .then(responses => {
             //console.log(`gbifCountsByDate::fetchAll(${searchTerm}) RAW RESULT:`, responses);
@@ -86,16 +90,18 @@ function fetchAll(searchTerm, fileConfig=false) {
             //console.log('GBIF counts by date sorted by count:', counts);
             counts.sort((a,b) => {return a.date > b.date;})
             //console.log('GBIF counts by date sorted by date:', counts);
-            //return Promise.resolve({total:total, max:max, counts:counts}); //this works too, but not needed
-            return {total:total, max:max, min:min, counts:counts};
+            let res = {total:total, max:max, min:min, counts:counts};
+            //setStoredData('gbifOccsByDate', searchTerm, qrys, res);
+            return res;
         })
         .catch(err => {
             console.log(`ERROR fetchAll ERROR:`, err);
             //return Promise.reject(new Error(err)); //this works too, but not needed
             return new Error(err);
         })
-    console.log(`fetchAll promise.all`, all);
-    return all; //this is how it's done. strange errors when not.
+        console.log(`fetchAll promise.all`, all);
+        return all; //this is how it's done. strange errors when not.
+    //}
 }
 
 export async function gbifCountsByDateByTaxonKey(taxonKey, fileConfig) {
