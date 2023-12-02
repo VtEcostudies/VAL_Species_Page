@@ -1,3 +1,6 @@
+/*
+    This file is for fetching species data via Google Sheets API
+*/
 import { fetchGoogleSheetData, defaultSheetIds } from "../VAL_Web_Utilities/js/fetchGoogleSheetsData.js";
 
 const Storage = sessionStorage; //localStorage;

@@ -1,5 +1,5 @@
 import { getGbifTaxonKeyFromName } from "../VAL_Web_Utilities/js/commonUtilities.js";
-import { getListSubTaxonKeys } from "../VAL_Web_Utilities/js/gbifItemCounts.js";
+import { getListSubTaxonKeys } from "../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
 import { getGbifSpeciesByTaxonKey } from "../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 import { getStoredData, setStoredData, getSetStoredData } from "../VAL_Web_Utilities/js/storedData.js";
 const facetQuery = '&facet=eventDate&facetLimit=1200000&limit=0';
