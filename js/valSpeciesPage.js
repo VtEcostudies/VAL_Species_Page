@@ -1,15 +1,14 @@
 import { getDistribution } from './valDistSuitMap.js'
-//import { inatFreqHistogram } from './inatPhenologyHistogram.js';
 import { gbifCountsByYearByTaxonKey, gbifCountsByYearByTaxonName } from './gbifCountsByYear.js'
 import { gbifCountsByMonthByTaxonKey, gbifCountsByMonthByTaxonName } from './gbifCountsByMonth.js'
 import { gbifCountsByDateByTaxonKey, gbifCountsByDateByTaxonName } from './gbifCountsByDate.js';
 import { getStoredData } from './fetchSpeciesData.js';
-import { getGbifSynonymsByTaxonKey } from '../VAL_Web_Utilities/js/fetchGbifSpecies.js';
+import { getGbifSynonymsByHigherTaxonKey, getGbifSynonymsFromKey } from '../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { getWikiHtmlPage, getWikiSummary } from '../VAL_Web_Utilities/js/wikiPageData.js';
 import { getInatSpecies } from '../VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
 import { inatTaxonObsDonut } from '../VAL_Web_Utilities/js/inatTaxonObservationDonut.js';
-import { getGbifTaxonKeyFromName, getGbifTaxonObjFromKey, getParentRank, parseNameToRank } from '../VAL_Web_Utilities/js/commonUtilities.js';
+import { getGbifTaxonKeyFromName, getGbifTaxonFromKey, getParentRank, parseNameToRank } from '../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../VAL_Web_Utilities/js/gbifPhenologyModule.js';
 import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';;
 
@@ -73,15 +72,13 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
         })
     let synRank = taxonObj.rank;
     if ('SPECIES' == taxonObj.rank || 'SUBSPECIES' == taxonObj.rank) {synRank = 0;} //this allows SUBSEPECIES synonyms to be list for SPECIES
-    let syns = getGbifSynonymsByTaxonKey(taxonKey, synRank, fileConfig); //O'E, only list same-rank synonyms (too messy to include for higher ranks)
+    //let syns = getGbifSynonymsByHigherTaxonKey(taxonKey, synRank, fileConfig); //O'E, only list same-rank synonyms (too messy to include for higher ranks)
+    let syns = getGbifSynonymsFromKey(taxonKey);
     syns.then(syns => {
-        let html = '';
-        if (syns.synonyms) {
-            syns.synonyms.forEach(syn => {
-                html += ` ~ ${syn.rank} <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.taxonomicStatus})`;
-            })
-            eleTaxn.innerHTML += html;
-        }
+        //syns.synonyms.forEach(syn => {
+        syns.forEach(syn => {
+            eleTaxn.innerHTML += ` ~ ${syn.rank} <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.taxonomicStatus})`;
+        })
     })
     if (taxonObj.accepted) {
         let html = ` ~ <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonObj.acceptedKey}">${taxonObj.accepted}</a> (ACCEPTED)`;
@@ -119,13 +116,12 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     if (eleWiki) {
         //Use Synonyms to look for wikipedia alternate content:
         syns.then(syns => {
-            let html = '';
-            syns.synonyms.forEach(syn => {
+            //syns.synonyms.forEach(syn => {
+            syns.forEach(syn => {
                 if (syn.canonicalName != wikiName) {
-                    html += `Wikipedia for synonym <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonKey}&taxonName=${taxonName}&wikiName=${syn.canonicalName}">${syn.canonicalName}</a><br>`
+                    eleWiki.innerHTML += `Wikipedia for synonym <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonKey}&taxonName=${taxonName}&wikiName=${syn.canonicalName}">${syn.canonicalName}</a><br>`
                 }
             })
-            if (html) {eleWiki.innerHTML += html;}
         })
     }
     if (eleImag) {
@@ -263,14 +259,14 @@ function startUp() {
         console.log('valSpeciesPage | siteName:', siteName, 'dataConfig:', fileConfig.dataConfig);
         profileUrl = fileConfig.dataConfig.profileUrl;        
         if (taxonKey) {
-            let taxonObj = await getGbifTaxonObjFromKey(taxonKey);
+            let taxonObj = await getGbifTaxonFromKey(taxonKey);
             if (!taxonName) {taxonName = taxonObj.canonicalName;}
             fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
         } else if (taxonName) {
             if (!taxonRank) {taxonRank = parseNameToRank(taxonName);}
             let taxonKey = await getGbifTaxonKeyFromName(taxonName, taxonRank);
             if (taxonKey) {
-                let taxonObj = await getGbifTaxonObjFromKey(taxonKey);
+                let taxonObj = await getGbifTaxonFromKey(taxonKey);
                 fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
             }
             else {
@@ -299,7 +295,7 @@ function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {
     //gbifD3PhenologyByTaxonName(taxonName, 'speciesCountsByWeek', fileConfig);
     gbifD3PhenologyByTaxonKey(taxonKey, 'speciesCountsByWeek', fileConfig);
     gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
-    inatTaxonObsDonut(taxonName, taxonObj.rank, 'inatTaxonObsDonut', false, fileConfig.dataConfig.inatProject)
+    inatTaxonObsDonut(taxonName, taxonObj.rank, 'inatTaxonObsDonut', fileConfig.dataConfig.inatProject)
     getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
     gbifInfo.then(info => {
         if (info.total < 9900) {

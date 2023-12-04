@@ -1,6 +1,5 @@
-import { getGbifTaxonKeyFromName } from "../VAL_Web_Utilities/js/commonUtilities.js";
 import { getListSubTaxonKeys } from "../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
-import { getGbifSpeciesByTaxonKey } from "../VAL_Web_Utilities/js/fetchGbifSpecies.js";
+import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 const facetQuery = '&facet=month&facetLimit=1200000&limit=0';
 
 /*
@@ -9,7 +8,7 @@ https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&scientificName=Danaus
 https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=false&scientificName=Danaus%20plexippus&facet=month&facetLimit=1200000&limit=0
 */
 async function fetchAllByKey(taxonKey, fileConfig) {
-    let self = await getGbifSpeciesByTaxonKey(taxonKey); //retrieve species info for species-list taxonKey - to get nubKey for below
+    let self = await getGbifTaxonFromKey(taxonKey); //retrieve species info for species-list taxonKey - to get nubKey for below
     let srch = `taxonKey=${self.nubKey ? self.nubKey : taxonKey}`;
     let subs = {keys:[]};
     if (fileConfig.dataConfig.drillRanks.includes(self.rank)) { //only drill-down lower ranks
