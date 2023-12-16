@@ -51,7 +51,8 @@ header {
 }
 
 .iconicImage {
-  max-height: 500px;
+  max-height: 500px; /* This alone preserves image aspect ratio. */
+  height: 410px; /* This makes image-width stretch to fit but constrains image height to match stats and tabs. */
 }
 
 /* Custom CSS to align image content to the bottom of a column */
@@ -124,7 +125,8 @@ header {
   padding: 6px 12px;
   border: 1px solid #000;
   border-top: none;
-  height: 100%;
+  /*height: 100%;*/ /* This resizes container to content height. */
+  height:280px; /* This constrains content to a fixed height despite overflow slidebars. */
 }
 
 /* Style the bottom tab content */

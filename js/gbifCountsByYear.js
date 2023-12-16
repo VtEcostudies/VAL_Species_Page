@@ -121,7 +121,7 @@ function gbifCountsByYear(data, htmlId) {
     // set dimensions and margins of the graph
     var margin = {top: 15, right: 30, bottom: 30, left: 40};
     var width = 400 - margin.left - margin.right; var minWidth = width; 
-    var height = 300 - margin.top - margin.bottom;
+    var height = 250 - margin.top - margin.bottom;
 
     console.log(`gbifCountsByYear data`, data);
     width = data.counts.length * 10 - margin.left - margin.right;

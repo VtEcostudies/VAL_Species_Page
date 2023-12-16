@@ -8,7 +8,7 @@ import { getWikiHtmlPage, getWikiSummary } from '../VAL_Web_Utilities/js/wikiPag
 import { getInatSpecies } from '../VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
 import { inatTaxonObsDonut } from '../VAL_Web_Utilities/js/inatTaxonObservationDonut.js';
-import { getGbifTaxonKeyFromName, getGbifTaxonFromKey, getParentRank, parseNameToRank } from '../VAL_Web_Utilities/js/fetchGbifSpecies.js';
+import { getGbifTaxonKeyFromName, getGbifTaxonFromKey, getGbifVernacularsFromKey, getParentRank, parseNameToRank } from '../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../VAL_Web_Utilities/js/gbifPhenologyModule.js';
 import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';;
 
@@ -50,15 +50,26 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     let eleWiki = document.getElementById("wikiText");
     let eleMore = document.getElementById("wikiPageHtml");
     let htmlWait = `&nbsp<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
-    eleTaxn.innerHTML = `${taxonObj.rank} <u>${taxonName}</u> (${taxonObj.taxonomicStatus})`;
+    eleTaxn.innerHTML = `${taxonObj.rank ? taxonObj.rank : ''} <u>${taxonName}</u> (${taxonObj.taxonomicStatus})`;
     eleSrnk.innerHTML = htmlWait;
     eleIucn.innerHTML = htmlWait;
     eleTndE.innerHTML = htmlWait;
     eleFrst.innerHTML = htmlWait;
     eleLast.innerHTML = htmlWait;
     eleRecs.innerHTML = htmlWait;
-    eleComn.innerHTML = taxonObj.vernacularName ? taxonObj.vernacularName : '';
-    if (taxonObj.vernacularName) {eleComn.title = `Vernacular Name from GBIF species-list`;}
+    let vern = getGbifVernacularsFromKey(taxonObj.key);
+    if (taxonObj.vernacularName) {
+        eleComn.innerHTML = taxonObj.vernacularName;
+        eleComn.title = `Vernacular Name from GBIF species/key`;
+    } else {
+        vern.then(vern => {
+            if (vern.length) {
+                eleComn.innerHTML = vern[0].vernacularName;
+                eleComn.title = `Vernacular Name from GBIF species/key/vernacularNames`;
+            }
+        })
+        .catch(err => {console.log('valSpeciesPage=>fillTaxonStats=>getGbifVernacularsFromKey ERROR', err)})    
+    }
     elelTnE.style.display = fileConfig.dataConfig.atlasAdmin ? elelTnE.style.display : 'none';
     eleTndE.style.display = fileConfig.dataConfig.atlasAdmin ? eleTndE.style.display : 'none';
     elelTnE.innerText = `${fileConfig.dataConfig.atlasAdmin} List:`;
@@ -77,12 +88,11 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     syns.then(syns => {
         //syns.synonyms.forEach(syn => {
         syns.forEach(syn => {
-            eleTaxn.innerHTML += ` ~ ${syn.rank} <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.taxonomicStatus})`;
+            eleTaxn.innerHTML += ` <= ${syn.rank} <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.taxonomicStatus})`;
         })
     })
     if (taxonObj.accepted) {
-        let html = ` ~ <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonObj.acceptedKey}">${taxonObj.accepted}</a> (ACCEPTED)`;
-        eleTaxn.innerHTML += html;
+        eleTaxn.innerHTML = ` => <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonObj.acceptedKey}">${taxonObj.accepted}</a> (ACCEPTED)`;
     }
     let gbif = gbifCountsByDateByTaxonKey(taxonKey, fileConfig);
     gbifInfo = gbif;
@@ -137,7 +147,7 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
             eleImag.classList.add("pointer");
         }
     }
-    if (!taxonObj.vernacularName && inat.preferred_common_name) {
+    if (!eleComn.innerHTML && inat.preferred_common_name) {
         eleComn.innerHTML = inat.preferred_common_name;
         eleComn.title = `Vernacular Name from iNat API - preferred_common_name`;
     }
@@ -257,23 +267,27 @@ function startUp() {
     import(`../VAL_Web_Utilities/js/gbifDataConfig.js?siteName=${siteName}`)
         .then(async fileConfig => {
         console.log('valSpeciesPage | siteName:', siteName, 'dataConfig:', fileConfig.dataConfig);
-        profileUrl = fileConfig.dataConfig.profileUrl;        
-        if (taxonKey) {
-            let taxonObj = await getGbifTaxonFromKey(taxonKey);
-            if (!taxonName) {taxonName = taxonObj.canonicalName;}
-            fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
-        } else if (taxonName) {
-            if (!taxonRank) {taxonRank = parseNameToRank(taxonName);}
-            let taxonKey = await getGbifTaxonKeyFromName(taxonName, taxonRank);
+        if (!fileConfig.dataConfig) {
+            alert(`Living Atlas site named '${siteName}' does not exist.`)
+        } else {
+            profileUrl = fileConfig.dataConfig.profileUrl;        
             if (taxonKey) {
                 let taxonObj = await getGbifTaxonFromKey(taxonKey);
+                if (!taxonName) {taxonName = taxonObj.canonicalName;}
                 fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
-            }
-            else {
+            } else if (taxonName) {
+                if (!taxonRank) {taxonRank = parseNameToRank(taxonName);}
+                let taxonKey = await getGbifTaxonKeyFromName(taxonName, taxonRank);
+                if (taxonKey) {
+                    let taxonObj = await getGbifTaxonFromKey(taxonKey);
+                    fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
+                }
+                else {
+                    notFound(taxonKey, taxonName, taxonRank);
+                }
+            } else {
                 notFound(taxonKey, taxonName, taxonRank);
             }
-        } else {
-            notFound(taxonKey, taxonName, taxonRank);
         }
     })
 }
@@ -295,7 +309,7 @@ function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {
     //gbifD3PhenologyByTaxonName(taxonName, 'speciesCountsByWeek', fileConfig);
     gbifD3PhenologyByTaxonKey(taxonKey, 'speciesCountsByWeek', fileConfig);
     gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
-    inatTaxonObsDonut(taxonName, taxonObj.rank, 'inatTaxonObsDonut', fileConfig.dataConfig.inatProject)
+    inatTaxonObsDonut(taxonName, taxonObj.rank, taxonObj.parent, 'inatTaxonObsDonut', fileConfig.dataConfig.inatProject)
     getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
     gbifInfo.then(info => {
         if (info.total < 9900) {
