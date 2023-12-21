@@ -81,8 +81,11 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
             eleSgcn.innerHTML = (ssr ? (ssr.SGCN ? `&nbsp~&nbsp${ssr.SGCN}` : '') : '');
             eleTndE.innerHTML = '&nbsp' + (tne ? ('T'==tne ? 'Threatened' : ('E'==tne ? 'Endangered' : 'N/A')) : 'N/A');
         })
+    if (taxonObj.accepted) { //there is an 'accepted' value, so we're showing a synonym
+        eleTaxn.innerHTML += ` => <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonObj.acceptedKey}">${taxonObj.accepted}</a> (ACCEPTED)`;
+    }
     let synRank = taxonObj.rank;
-    if ('SPECIES' == taxonObj.rank || 'SUBSPECIES' == taxonObj.rank) {synRank = 0;} //this allows SUBSEPECIES synonyms to be list for SPECIES
+    if ('SPECIES' == taxonObj.rank || 'SUBSPECIES' == taxonObj.rank) {synRank = 0;} //this allows SUBSPECIES synonyms to be list for SPECIES
     //let syns = getGbifSynonymsByHigherTaxonKey(taxonKey, synRank, fileConfig); //O'E, only list same-rank synonyms (too messy to include for higher ranks)
     let syns = getGbifSynonymsFromKey(taxonKey);
     syns.then(syns => {
@@ -91,9 +94,6 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
             eleTaxn.innerHTML += ` <= ${syn.rank} <a href="${profileUrl}?siteName=${siteName}&taxonKey=${syn.key}&taxonName=${syn.canonicalName}">${syn.canonicalName}</a> (${syn.taxonomicStatus})`;
         })
     })
-    if (taxonObj.accepted) {
-        eleTaxn.innerHTML = ` => <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonObj.acceptedKey}">${taxonObj.accepted}</a> (ACCEPTED)`;
-    }
     let gbif = gbifCountsByDateByTaxonKey(taxonKey, fileConfig);
     gbifInfo = gbif;
     gbif.then(gbif => {

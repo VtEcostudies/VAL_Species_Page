@@ -51,7 +51,7 @@ header {
 }
 
 .iconicImage {
-  max-height: 500px; /* This alone preserves image aspect ratio. */
+  max-height: 500px; /* This by itself preserves image aspect ratio. */
   height: 410px; /* This makes image-width stretch to fit but constrains image height to match stats and tabs. */
 }
 
