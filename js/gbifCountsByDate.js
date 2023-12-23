@@ -1,6 +1,6 @@
-import { getListSubTaxonKeys } from "../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
-import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../VAL_Web_Utilities/js/fetchGbifSpecies.js";
-import { getStoredData, setStoredData, getSetStoredData } from "../VAL_Web_Utilities/js/storedData.js";
+import { getListSubTaxonKeys } from "../../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
+import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../../VAL_Web_Utilities/js/fetchGbifSpecies.js";
+import { getStoredData, setStoredData, getSetStoredData } from "../../VAL_Web_Utilities/js/storedData.js";
 const facetQuery = '&facet=eventDate&facetLimit=1200000&limit=0';
 const drillRanks = ['GENUS','SPECIES','SUBSPECIES','VARIETY'];
 

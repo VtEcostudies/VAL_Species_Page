@@ -2,7 +2,7 @@
     Fetch a species distribution map file.
 */
 
-import { fetchImgFile } from "../VAL_Web_Utilities/js/commonUtilities.js";
+import { fetchImgFile } from "../../VAL_Web_Utilities/js/commonUtilities.js";
 
 const imgDistFileUrl = `https://vtatlasoflife.org/species_profiles/distribution-png`;
 

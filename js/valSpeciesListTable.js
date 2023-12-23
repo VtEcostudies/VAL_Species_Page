@@ -1,6 +1,6 @@
-import { getOccsByFilters } from '../VAL_Web_Utilities/js/fetchGbifOccs.js';
-import { getWikiPage } from '../VAL_Web_Utilities/js/wikiPageData.js';
-import { parseCanonicalFromScientific } from '../VAL_Web_Utilities/js/commonUtilities.js';
+import { getOccsByFilters } from '../../VAL_Web_Utilities/js/fetchGbifOccs.js';
+import { getWikiPage } from '../../VAL_Web_Utilities/js/wikiPageData.js';
+import { parseCanonicalFromScientific } from '../../VAL_Web_Utilities/js/commonUtilities.js';
   
 const eleTbl = document.getElementById("speciesListTable");
 

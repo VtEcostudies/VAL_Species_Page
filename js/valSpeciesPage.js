@@ -3,14 +3,14 @@ import { gbifCountsByYearByTaxonKey, gbifCountsByYearByTaxonName } from './gbifC
 import { gbifCountsByMonthByTaxonKey, gbifCountsByMonthByTaxonName } from './gbifCountsByMonth.js'
 import { gbifCountsByDateByTaxonKey, gbifCountsByDateByTaxonName } from './gbifCountsByDate.js';
 import { getStoredData } from './fetchSpeciesData.js';
-import { getGbifSynonymsByHigherTaxonKey, getGbifSynonymsFromKey } from '../VAL_Web_Utilities/js/fetchGbifSpecies.js';
-import { getWikiHtmlPage, getWikiSummary } from '../VAL_Web_Utilities/js/wikiPageData.js';
-import { getInatSpecies } from '../VAL_Web_Utilities/js/inatSpeciesData.js';
+import { getGbifSynonymsByHigherTaxonKey, getGbifSynonymsFromKey } from '../../VAL_Web_Utilities/js/fetchGbifSpecies.js';
+import { getWikiHtmlPage, getWikiSummary } from '../../VAL_Web_Utilities/js/wikiPageData.js';
+import { getInatSpecies } from '../../VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
-import { inatTaxonObsDonut } from '../VAL_Web_Utilities/js/inatTaxonObservationDonut.js';
-import { getGbifTaxonKeyFromName, getGbifTaxonFromKey, getGbifVernacularsFromKey, getParentRank, parseNameToRank } from '../VAL_Web_Utilities/js/fetchGbifSpecies.js';
-import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../VAL_Web_Utilities/js/gbifPhenologyModule.js';
-import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';;
+import { inatTaxonObsDonut } from '../../VAL_Web_Utilities/js/inatTaxonObservationDonut.js';
+import { getGbifTaxonKeyFromName, getGbifTaxonFromKey, getGbifVernacularsFromKey, getParentRank, parseNameToRank } from '../../VAL_Web_Utilities/js/fetchGbifSpecies.js';
+import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../../VAL_Web_Utilities/js/gbifPhenologyModule.js';
+import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';;
 
 var gbifInfo = false; //gbif occurrence query promise shared to handle in multiple sections
 var siteName = false;
@@ -30,7 +30,7 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     let eleVtL = document.getElementById("vtLbl");
     let eleFsL = document.getElementById("fsLbl");
     let eleLsL = document.getElementById("lsLbl");
-    eleTtl.innerHTML = `<a href="${dataConfig.homeUrl}">${dataConfig.atlasName}</a>`;
+    if (eleTtl) {eleTtl.innerHTML = `<a href="${dataConfig.homeUrl}">${dataConfig.atlasName}</a>`;}
     eleVtL.innerText = `${dataConfig.atlasPlace} Records:`;
     eleFsL.innerText = `First ${dataConfig.atlasAbbrev} Record:`;
     eleLsL.innerText = `Last ${dataConfig.atlasAbbrev} Record:`;
@@ -264,7 +264,7 @@ function startUp() {
     inatWiki = objUrlParams.get('inatWiki');
     console.log('Query Param inatWiki:', inatWiki);
 
-    import(`../VAL_Web_Utilities/js/gbifDataConfig.js?siteName=${siteName}`)
+    import(`../../VAL_Web_Utilities/js/gbifDataConfig.js?siteName=${siteName}`)
         .then(async fileConfig => {
         console.log('valSpeciesPage | siteName:', siteName, 'dataConfig:', fileConfig.dataConfig);
         if (!fileConfig.dataConfig) {

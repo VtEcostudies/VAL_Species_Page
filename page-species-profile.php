@@ -55,12 +55,12 @@
                             <label id="sgcn" class="speciesStatsValue"></label>
                         </div>
                         <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>IUCN:</b></label><label id="iucn" class="speciesStatsValue"></label></div>
-                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>VT List:</b></label><label id="TndE" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="teLbl">VT List:</label></b><label id="TndE" class="speciesStatsValue"></label></div>
                     </div>
                     <div class="col-lg-6" id="divTopStats" class="speciesStats">
-                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Vermont Records:</b></label><label id="vtRec" class="speciesStatsValue"></label></div>
-                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>First VT Record:</b></label><label id="fsRec" class="speciesStatsValue"></label></div>
-                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>Last VT Record:</b></label><label id="lsRec" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="vtLbl">Vermont Records:</label></b><label id="vtRec" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="fsLbl">First VT Record:</label></b><label id="fsRec" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="lsLbl">Last VT Record:</label></b><label id="lsRec" class="speciesStatsValue"></label></div>
                     </div>
                 </div>
                 <div class="row taxonDetailBottom">
@@ -70,7 +70,7 @@
                         <button id="obsIdTab" class="tabLinksTop" onclick="openTab(event, 'NeedsId', 'tabContentTop', 'tabLinksTop')">iNaturalist</button>
                     </div>
                     <div id="Phenology" class="tabContentTop">
-                        <div id="speciesCountsByMonth" class=""></div>
+                        <div id="speciesCountsByWeek" class=""></div>
                     </div>
                     <div id="History" class="tabContentTop">
                         <div id="speciesCountsByYear" class=""></div>

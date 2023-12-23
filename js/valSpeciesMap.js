@@ -1,9 +1,9 @@
 /*
   Load a json array from GBIF Occurrence API and populate the map with point occurrence data.
 */
-import { parseCanonicalFromScientific } from "../VAL_Web_Utilities/js/commonUtilities.js";
-import { getGbifDatasetInfo, getOccsByNameAndLocation } from "../VAL_Web_Utilities/js/fetchGbifOccs.js";
-import { getWikiPage } from '../VAL_Web_Utilities/js/wikiPageData.js';
+import { parseCanonicalFromScientific } from "../../VAL_Web_Utilities/js/commonUtilities.js";
+import { getGbifDatasetInfo, getOccsByNameAndLocation } from "../../VAL_Web_Utilities/js/fetchGbifOccs.js";
+import { getWikiPage } from '../../VAL_Web_Utilities/js/wikiPageData.js';
 
 const fmt = new Intl.NumberFormat(); //use this to format nubmers like fmt.format(value)
 var vceCenter = [43.6962, -72.3197]; //VCE coordinates

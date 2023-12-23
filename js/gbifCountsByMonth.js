@@ -1,5 +1,5 @@
-import { getListSubTaxonKeys } from "../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
-import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../VAL_Web_Utilities/js/fetchGbifSpecies.js";
+import { getListSubTaxonKeys } from "../../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
+import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 const facetQuery = '&facet=month&facetLimit=1200000&limit=0';
 
 /*
