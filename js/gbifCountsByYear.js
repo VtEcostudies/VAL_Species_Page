@@ -119,7 +119,8 @@ export async function gbifCountsByYearByTaxonKey(taxonKey, htmlId, fileConfig) {
 }
 function gbifCountsByYear(data, htmlId) {
     // set dimensions and margins of the graph
-    var margin = {top: 15, right: 30, bottom: 30, left: 40};
+    let yMax = d3.max(data.counts, d => d.count);
+    var margin = {top: 15, right: 30, bottom: 30, left: 30 + (String(yMax).length-3)*7};
     var width = 400 - margin.left - margin.right; var minWidth = width; 
     var height = 250 - margin.top - margin.bottom;
 
@@ -158,12 +159,20 @@ function gbifCountsByYear(data, htmlId) {
         .attr("transform", "translate(-12, 5)rotate(-90)")
         .style("text-anchor", "end");
 
-    // Add Y axis
+    // Scale Y axis range
     var y = d3.scaleLinear()
         .domain([0, data.max*(1.1)])
-        .range([ height, 0]);
-        svg.append("g")
-        .call(d3.axisLeft(y));
+        .range([height, 0]);
+    // Create Y Axis with only whole number tickmarks
+    let yAxis;
+    if (yMax > 10) {
+        yAxis = d3.axisLeft(y); //auto-range tick values, auto-format large numbers
+    } else {
+        yAxis = d3.axisLeft(y)
+            .tickValues(d3.range(yMax+1)) //only allow tick divisions at whole numbers
+            .tickFormat(d3.format(".0f")); //specify whole number values at ticks w/o decimals
+    }
+    svg.append("g").call(yAxis);
 
     // Bars
     svg.selectAll("mybar")
