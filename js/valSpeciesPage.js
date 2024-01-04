@@ -10,7 +10,7 @@ import { loadSpeciesMap } from './valSpeciesMap.js';
 import { inatTaxonObsDonut } from '../../VAL_Web_Utilities/js/inatTaxonObservationDonut.js';
 import { getGbifTaxonKeyFromName, getGbifTaxonFromKey, getGbifVernacularsFromKey, getParentRank, parseNameToRank } from '../../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../../VAL_Web_Utilities/js/gbifPhenologyModule.js';
-import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';;
+import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';
 
 var gbifInfo = false; //gbif occurrence query promise shared to handle in multiple sections
 var siteName = false;

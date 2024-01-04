@@ -17,6 +17,7 @@
 <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,300italic,400italic,600,600italic,700,700italic,900,900italic|Sorts+Mill+Goudy:400,400italic' rel='stylesheet' type='text/css'>
 <link href="/wp-content/themes/val/VAL_Species_Page/css/species-page-styles.css" rel="stylesheet">
 <link href="/wp-content/themes/val/VAL_Species_Page/css/species-map-styles.css" rel="stylesheet">
+<link href="/wp-content/themes/val/VAL_Web_Utilities/css/pheno.css" rel="stylesheet">
 
 <!-- Make sure to put Leaflet JS AFTER Leaflet CSS -->
 <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
@@ -35,7 +36,7 @@
 
   <div class="container">
         <div class="row">
-            <div class="col-lg-6">
+            <div class="col-lg-12">
                 <label id="common" class="speciesCommon"></label>
                 <label id="taxon" class="speciesTaxon"></label>
             </div>
