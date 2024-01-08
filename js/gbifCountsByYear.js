@@ -214,8 +214,12 @@ function gbifCountsByYear(data, htmlId) {
     }
     // Click event handler
     function handleClick(event, d) {
+        //recall that Wordpress reserves the query parameter 'year'. We end-run around that by using param gbif-year
+        //which is converted to 'year' within the gbif data widget.
+        let url = `${exploreUrl}?${searchTerm}&gbif-year=${d.name}&view=TABLE`;
+        console.log('gbifCountsByYear=>handleClick', url);
         if (exploreUrl && searchTerm) {
-            window.open(`${exploreUrl}?${searchTerm}&year=${d.name}&view=TABLE`);
+            window.open(url);
         }
     }
 }
