@@ -301,11 +301,17 @@ function notFound(fileConfig, taxonKey, taxonName, taxonRank, message='') {
     let eleTtl = document.getElementById("pageTitle");
     if (eleTtl) {eleTtl.innerHTML = `<a href="${fileConfig.dataConfig.homeUrl}">${fileConfig.dataConfig.atlasName}</a>`;}
     let qryMsg = `<h3>${message?message:taxonName+' with rank '+taxonRank+' Not Found'}</h3>`; 
-    qryMsg += '<p>Include query parameters as follows:</p>';
+    qryMsg += '<p>To query a taxon within a species list there are 2 options:</p>';
+    qryMsg += `<ol>`;
+    qryMsg += `<li>Use a GBIF taxonKey from within a species list, or</li>`
+    qryMsg += `<li>Use a siteName and taxonName (and taxonRank)</li>`
+    qryMsg += `</ol>`;
+    qryMsg += '<p>Some example query parameters:</p>';
     qryMsg += `<ul>`;
-    qryMsg += `<li>With eg. <a href="${profileUrl}?taxonKey=5761">?taxonKey=5761</a></li>`
-    qryMsg += `<li>A single taxonName or binomial 'Genus species' like <a href="${profileUrl}?taxonName=Danaus plexippus">'?taxonName=Danaus plexippus'</a></li>`;
-    qryMsg += `<li>Include eg. <a href="${profileUrl}?taxonName=Danaus&taxonRank=GENUS">&taxonRank=GENUS</a> to resolve name ambiguities</li>`
+    qryMsg += `<li>With eg. <a href="${profileUrl}?taxonKey=160795823">?taxonKey=160795823</a></li>`
+    qryMsg += `<li>With eg. <a href="${profileUrl}?siteName=vtButterflies&taxonKey=210595558">?siteName=vtButterflies&taxonKey=210595558</a></li>`
+    qryMsg += `<li>A single taxonName or binomial 'Genus species' like <a href="${profileUrl}?siteName=vtButterflies&taxonName=Danaus plexippus">'?siteName=vtButterflies&taxonName=Danaus plexippus'</a></li>`;
+    qryMsg += `<li>Include taxonRank eg. <a href="${profileUrl}?siteName=mval&taxonName=Sterna&taxonRank=GENUS">?siteName=mval&taxonName=Sterna&taxonRank=GENUS</a> to resolve name ambiguities</li>`
     qryMsg += `</ul>`;
     console.log(qryMsg);
     document.getElementById("common").innerHTML = qryMsg;
