@@ -8,7 +8,7 @@ import { getWikiHtmlPage, getWikiSummary } from '../../VAL_Web_Utilities/js/wiki
 import { getInatSpecies } from '../../VAL_Web_Utilities/js/inatSpeciesData.js';
 import { loadSpeciesMap } from './valSpeciesMap.js';
 import { inatTaxonObsDonut } from '../../VAL_Web_Utilities/js/inatTaxonObservationDonut.js';
-import { getGbifTaxonKeyFromName, getGbifTaxonFromKey, getGbifVernacularsFromKey, getParentRank, parseNameToRank } from '../../VAL_Web_Utilities/js/fetchGbifSpecies.js';
+import { getGbifTaxonKeyFromName, findListTaxonByNameAndRank, getGbifTaxonFromKey, getGbifVernacularsFromKey, getParentRank, parseNameToRank } from '../../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../../VAL_Web_Utilities/js/gbifPhenologyModule.js';
 import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';
 
@@ -277,28 +277,41 @@ function startUp() {
                 fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
             } else if (taxonName) {
                 if (!taxonRank) {taxonRank = parseNameToRank(taxonName);}
-                let taxonKey = await getGbifTaxonKeyFromName(taxonName, taxonRank);
-                if (taxonKey) {
-                    let taxonObj = await getGbifTaxonFromKey(taxonKey);
-                    fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
-                }
-                else {
-                    notFound(taxonKey, taxonName, taxonRank);
-                }
+                //let taxonKey = await getGbifTaxonKeyFromName(taxonName, taxonRank);
+                //if (taxonKey) {
+                    //let taxonObj = await getGbifTaxonFromKey(taxonKey);
+                findListTaxonByNameAndRank(fileConfig, taxonName, taxonRank).then(taxonObj => {
+                    if (taxonObj.key) {
+                        taxonKey = taxonObj.key;
+                        fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName);
+                    }
+                    else {
+                        notFound(fileConfig, taxonKey, taxonName, taxonRank);
+                    }
+                }).catch(err => {
+                    notFound(fileConfig, taxonKey, taxonName, taxonRank, err.message);
+                })
             } else {
-                notFound(taxonKey, taxonName, taxonRank);
+                notFound(fileConfig, taxonKey, taxonName, taxonRank);
             }
         }
     })
 }
-function notFound(taxonKey, taxonName, taxonRank) {
-    let qryMsg = 'Call page with query parameters as follows:<br>';
-    qryMsg += `With eg. <a href="${profileUrl}?taxonKey=5761">?taxonKey=5761</a><br>`
-    qryMsg += `A single taxonName or binomial 'Genus species' like <a href="${profileUrl}?taxonName=Danaus plexippus">'?taxonName=Danaus plexippus'</a><br>`;
-    qryMsg += `Include eg. <a href="${profileUrl}?taxonName=Danaus&taxonRank=GENUS">&taxonRank=GENUS to resolve name ambiguities</a><br>`
+function notFound(fileConfig, taxonKey, taxonName, taxonRank, message='') {
+    let eleTtl = document.getElementById("pageTitle");
+    if (eleTtl) {eleTtl.innerHTML = `<a href="${fileConfig.dataConfig.homeUrl}">${fileConfig.dataConfig.atlasName}</a>`;}
+    let qryMsg = `<h3>${message?message:taxonName+' with rank '+taxonRank+' Not Found'}</h3>`; 
+    qryMsg += '<p>Include query parameters as follows:</p>';
+    qryMsg += `<ul>`;
+    qryMsg += `<li>With eg. <a href="${profileUrl}?taxonKey=5761">?taxonKey=5761</a></li>`
+    qryMsg += `<li>A single taxonName or binomial 'Genus species' like <a href="${profileUrl}?taxonName=Danaus plexippus">'?taxonName=Danaus plexippus'</a></li>`;
+    qryMsg += `<li>Include eg. <a href="${profileUrl}?taxonName=Danaus&taxonRank=GENUS">&taxonRank=GENUS</a> to resolve name ambiguities</li>`
+    qryMsg += `</ul>`;
     console.log(qryMsg);
-    //alert(qryMsg);
     document.getElementById("common").innerHTML = qryMsg;
+    document.getElementById("rowTopContent").style.display = 'none';
+    document.getElementById("rowMidContent").style.display = 'none';
+    document.getElementById("rowBotContent").style.display = 'none';
 }
 
 function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {

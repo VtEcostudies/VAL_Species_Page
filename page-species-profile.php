@@ -35,14 +35,14 @@
 <script src="/wp-content/themes/val/VAL_Species_Page/js/valSpeciesPage.js" type="module"></script>
 
   <div class="container">
-        <div class="row">
+        <div class="row" id="rowTopMessage">
             <div class="col-lg-12">
                 <label id="common" class="speciesCommon"></label>
                 <label id="taxon" class="speciesTaxon"></label>
             </div>
         </div>
         <hr>
-        <div class="row">
+        <div class="row" id="rowTopContent">
             <div class="col-lg-6" id="divTopImage">
                 <img src="" id="iconicImage" class="iconicImage" />
                 <label id="iconicImageAttrib" class="imageAttrib"></label>
@@ -83,13 +83,13 @@
             </div>
         </div>
         <hr>
-        <div class="row">
+        <div class="row" id="rowMidContent">
             <div class="col-lg-12">
                 <p id="wikiText"></p>
             </div>
         </div>
         <hr>
-        <div class="row otherInfoTabs">
+        <div class="row otherInfoTabs" id="rowBotContent">
             <div class="col-lg-auto tab">
                 <button id="distrTab" class="tabLinksBot" onclick="openTab(event, 'Distr', 'tabContentBot', 'tabLinksBot')">Suitability/Distribution</button>
                 <button id="aboutTab" class="tabLinksBot" onclick="openTab(event, 'About', 'tabContentBot', 'tabLinksBot')">About</button>
