@@ -11,6 +11,14 @@ import { inatTaxonObsDonut } from '../../VAL_Web_Utilities/js/inatTaxonObservati
 import { getGbifTaxonKeyFromName, findListTaxonByNameAndRank, getGbifTaxonFromKey, getGbifVernacularsFromKey, getParentRank, parseNameToRank } from '../../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../../VAL_Web_Utilities/js/gbifPhenologyModule.js';
 import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';
+let siteNames = [];
+let siteConfig = '../VAL_Data_Explorers/js/gbifSiteConfig.js';
+import(siteConfig).then(file => {
+    console.log(`Dynamic import ${siteConfig} SUCCESS`, file);
+    siteNames = file.siteNames;
+}).catch(err => {
+    console.log(`Dynamic import ${siteConfig} ERROR`, err);
+})
 
 var gbifInfo = false; //gbif occurrence query promise shared to handle in multiple sections
 var siteName = false;
@@ -268,7 +276,9 @@ function startUp() {
         .then(async fileConfig => {
         console.log('valSpeciesPage | siteName:', siteName, 'dataConfig:', fileConfig.dataConfig);
         if (!fileConfig.dataConfig) {
-            alert(`Living Atlas site named '${siteName}' does not exist.`)
+            let msg = `Living Atlas site named '${siteName}' does not exist.`;
+            if (siteNames.length) {msg += `\nUse one of: \n\t\t${siteNames.join('\n\t\t')}`;}
+            alert(msg);
         } else {
             profileUrl = fileConfig.dataConfig.profileUrl;        
             if (taxonKey) {
