@@ -65,14 +65,22 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     eleFrst.innerHTML = htmlWait;
     eleLast.innerHTML = htmlWait;
     eleRecs.innerHTML = htmlWait;
-    let vern = getGbifVernacularsFromKey(taxonObj.key);
+    //let vern = getGbifVernacularsFromKey(taxonObj.key);
     if (taxonObj.vernacularName) {
-        eleComn.innerHTML = taxonObj.vernacularName;
+        console.log('taxonObj.vernacularName', taxonObj.vernacularName);
+        eleComn.innerHTML = taxonObj.vernacularName.replace(`'S`,`'s`);
         eleComn.title = `Vernacular Name from GBIF species/key`;
     } else {
+        let vern = getGbifVernacularsFromKey(taxonObj.key);
         vern.then(vern => {
             if (vern.length) {
-                eleComn.innerHTML = vern[0].vernacularName;
+                let vObj = false;
+                for (var i=0; i<vern.length; i++) {
+                    console.log(`getGbifVernacularsFromKey(${taxonObj.key})`, vern[i]);
+                    if (vern[i].preferred) {vObj = vern[i]; break;}
+                }
+                if (!vObj) {vObj = vern[0];} //no preferred name found. use first value.
+                eleComn.innerHTML = vObj.vernacularName.replace(`’`,`'`).replace(`'S`,`'s`);
                 eleComn.title = `Vernacular Name from GBIF species/key/vernacularNames`;
             }
         })
@@ -341,7 +349,7 @@ function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {
     inatTaxonObsDonut(taxonName, taxonObj.rank, taxonObj.parent, 'inatTaxonObsDonut', fileConfig.dataConfig.inatProject)
     getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
     gbifInfo.then(info => {
-        if (info.total < 9900) {
+        if ('val' ==  siteName && info.total < 9900) {
             if (initObsTab(1)) {
                 loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`, 'occMap', fileConfig);
             }
