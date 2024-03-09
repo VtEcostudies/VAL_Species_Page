@@ -21,7 +21,7 @@ export async function getStoredData(storeName="sheetSranks") {
     return storeData; //return a JSON data object from async function wraps the object in a promise. the caller should await or .then() it.
 }
 
-export async function getSheetVernaculars(sheetNumber=0) {
+export async function DEPRECATED_getSheetVernaculars(sheetNumber=0) {
     try {
         let res = await fetchGoogleSheetData(defaultSheetIds.vernacular, sheetNumber);
         //console.log('getSheetVernaculars RESULT:', res);
@@ -63,7 +63,7 @@ export async function getSheetVernaculars(sheetNumber=0) {
     }
 }
 
-export async function getSheetSranks(sheetNumber=0) {
+export async function DEPRECATED_getSheetSranks(sheetNumber=0) {
     try {
         let res = await fetchGoogleSheetData(defaultSheetIds.taxonSrank, sheetNumber);
         console.log('getSheetSranks RESULT:', res);

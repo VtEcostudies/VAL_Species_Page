@@ -2,7 +2,7 @@ import { getDistribution } from './valDistSuitMap.js'
 import { gbifCountsByYearByTaxonKey, gbifCountsByYearByTaxonName } from './gbifCountsByYear.js'
 import { gbifCountsByMonthByTaxonKey, gbifCountsByMonthByTaxonName } from './gbifCountsByMonth.js'
 import { gbifCountsByDateByTaxonKey, gbifCountsByDateByTaxonName } from './gbifCountsByDate.js';
-import { getStoredData } from './fetchSpeciesData.js';
+import { getStoredConservationStatus } from '../../VAL_Web_Utilities/js/fetchGoogleSheetsData.js';
 import { getGbifSynonymsByHigherTaxonKey, getGbifSynonymsFromKey } from '../../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { getWikiHtmlPage, getWikiSummary } from '../../VAL_Web_Utilities/js/wikiPageData.js';
 import { getInatSpecies } from '../../VAL_Web_Utilities/js/inatSpeciesData.js';
@@ -86,14 +86,16 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
         })
         .catch(err => {console.log('valSpeciesPage=>fillTaxonStats=>getGbifVernacularsFromKey ERROR', err)})    
     }
-    elelTnE.style.display = fileConfig.dataConfig.atlasAdmin ? elelTnE.style.display : 'none';
-    eleTndE.style.display = fileConfig.dataConfig.atlasAdmin ? eleTndE.style.display : 'none';
+    elelTnE.style.display = fileConfig.dataConfig.atlasAdmin ? elelTnE.style.display : 'none'; //label
+    eleTndE.style.display = fileConfig.dataConfig.atlasAdmin ? eleTndE.style.display : 'none'; //value
     elelTnE.innerText = `${fileConfig.dataConfig.atlasAdmin} List:`;
-    let shtInfo = getStoredData("sheetSranks");
+    console.log('conservationStatusName', dataConfig.conservationStatusName, dataConfig)
+    let shtInfo = getStoredConservationStatus(dataConfig.conservationStatusName); //pass function name?!?
     shtInfo.then(sheetSranks => {
             let ssr = sheetSranks[taxonName] ? sheetSranks[taxonName] : false;
             let tne = (ssr ? (ssr.TandE ? ssr.TandE : false) : false);
-            eleSrnk.innerHTML = '&nbsp' + (ssr ? ssr.S_RANK : 'N/A');
+            eleSrnk.innerHTML = '&nbsp' + (ssr ? (ssr.S_RANK ? ssr.S_RANK : 'N/A') : 'N/A');
+            eleSrnk.innerHTML = (ssr ? ('SC' == ssr.TandE ? ssr.TandE : 'N/A') : 'N/A'); //this is a hack for the MVAL site - MESA puts 'SC' with State T & E
             eleSgcn.innerHTML = (ssr ? (ssr.SGCN ? `&nbsp~&nbsp${ssr.SGCN}` : '') : '');
             eleTndE.innerHTML = '&nbsp' + (tne ? ('T'==tne ? 'Threatened' : ('E'==tne ? 'Endangered' : 'N/A')) : 'N/A');
         })
