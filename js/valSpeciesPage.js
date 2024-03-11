@@ -349,23 +349,36 @@ function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {
     gbifD3PhenologyByTaxonKey(taxonKey, 'speciesCountsByWeek', fileConfig);
     gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
     inatTaxonObsDonut(taxonName, taxonObj.rank, taxonObj.parent, 'inatTaxonObsDonut', fileConfig.dataConfig.inatProject)
-    getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
-    gbifInfo.then(info => {
-        if ('val' ==  siteName && info.total < 9900) {
-            if (initObsTab(1)) {
-                loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`, 'occMap', fileConfig);
+    if ('val' == siteName) {
+        getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
+        gbifInfo.then(info => {
+            if (info.total < 9900) {
+                if (initObsTab(1)) {
+                    loadSpeciesMap(`{"${taxonName}":"red","clusterMarkers":true}`, 'occMap', fileConfig);
+                }
+            } else {
+                initObsTab(0);
+                console.log(`Can't load observations. Too many to plot. (${info.total})`);
             }
-        } else {
-            initObsTab(0);
-            console.log(`Can't load observations. Too many to plot. (${info.total})`);
-        }
-    })
-
+        })
+    } else {
+        initObsTab(0);
+        initDisTab(0);
+    }
 }
 
 //This just initializes the occurrence map tab. The map is shown by clicking its tab, handled with inline script in html.
 function initObsTab(show=1) {
     let eleTab = document.getElementById('occMapTab');
+    if (eleTab) {
+        eleTab.style.display = show ? 'block' : 'none';
+    }
+    return (eleTab && show);
+}
+
+//This just initializes the suitability/distribution tab. Shown by clicking its tab, handled with inline script in html.
+function initDisTab(show=1) {
+    let eleTab = document.getElementById('distrTab');
     if (eleTab) {
         eleTab.style.display = show ? 'block' : 'none';
     }
