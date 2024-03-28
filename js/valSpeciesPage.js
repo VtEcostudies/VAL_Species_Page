@@ -89,10 +89,11 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     elelTnE.style.display = fileConfig.dataConfig.atlasAdmin ? elelTnE.style.display : 'none'; //label
     eleTndE.style.display = fileConfig.dataConfig.atlasAdmin ? eleTndE.style.display : 'none'; //value
     elelTnE.innerText = `${fileConfig.dataConfig.atlasAdmin} List:`;
-    console.log('conservationStatusName', dataConfig.conservationStatusName, dataConfig)
-    let shtInfo = getStoredConservationStatus(dataConfig.conservationStatusName); //pass function name?!?
+    console.log('conservationStatusName', dataConfig.conservationStatusName, dataConfig);
+    let shtInfo = getStoredConservationStatus(dataConfig.conservationStatusName);
     shtInfo.then(sheetSranks => {
             let ssr = sheetSranks[taxonName] ? sheetSranks[taxonName] : false;
+            console.log('conservationStatus result', taxonName, ssr);
             let tne = (ssr ? (ssr.TandE ? ssr.TandE : false) : false);
             eleSrnk.innerHTML = '&nbsp' + (ssr ? (ssr.S_RANK ? ssr.S_RANK : 'N/A') : 'N/A');
             eleSrnk.innerHTML = (ssr ? ('SC' == ssr.TandE ? ssr.TandE : 'N/A') : 'N/A'); //this is a hack for the MVAL site - MESA puts 'SC' with State T & E
@@ -348,7 +349,7 @@ function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {
     //gbifD3PhenologyByTaxonName(taxonName, 'speciesCountsByWeek', fileConfig);
     gbifD3PhenologyByTaxonKey(taxonKey, 'speciesCountsByWeek', fileConfig);
     gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
-    inatTaxonObsDonut(taxonName, taxonObj.rank, taxonObj.parent, 'inatTaxonObsDonut', fileConfig.dataConfig.inatProject)
+    inatTaxonObsDonut(taxonName, taxonObj.rank, taxonObj.parent, 'inatTaxonObsDonut', fileConfig.dataConfig.inatProject);
     if ('val' == siteName) {
         getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
         gbifInfo.then(info => {
