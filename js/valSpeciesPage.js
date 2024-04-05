@@ -96,7 +96,9 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
             console.log('conservationStatus result', taxonName, ssr);
             let tne = (ssr ? (ssr.TandE ? ssr.TandE : false) : false);
             eleSrnk.innerHTML = '&nbsp' + (ssr ? (ssr.S_RANK ? ssr.S_RANK : 'N/A') : 'N/A');
-            eleSrnk.innerHTML = (ssr ? ('SC' == ssr.TandE ? ssr.TandE : 'N/A') : 'N/A'); //this is a hack for the MVAL site - MESA puts 'SC' with State T & E
+            if ('statusMVAL'==dataConfig.conservationStatusName) { //this is a hack for the MVAL site - MESA puts 'SC' with State T & E
+                eleSrnk.innerHTML = (ssr ? ('SC' == ssr.TandE ? ssr.TandE : 'N/A') : 'N/A');
+            }
             eleSgcn.innerHTML = (ssr ? (ssr.SGCN ? `&nbsp~&nbsp${ssr.SGCN}` : '') : '');
             eleTndE.innerHTML = '&nbsp' + (tne ? ('T'==tne ? 'Threatened' : ('E'==tne ? 'Endangered' : 'N/A')) : 'N/A');
         })
