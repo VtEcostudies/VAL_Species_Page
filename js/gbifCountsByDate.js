@@ -1,7 +1,7 @@
 import { getListSubTaxonKeys } from "../../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
 import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 import { getStoredData, setStoredData, getSetStoredData } from "../../VAL_Web_Utilities/js/storedData.js";
-const facetQuery = '&facet=eventDate&facetLimit=1200000&limit=0';
+const facetQuery = '&facet=eventDate&facetLimit=1190000&limit=0';
 const drillRanks = ['GENUS','SPECIES','SUBSPECIES','VARIETY'];
 
 /*
@@ -52,18 +52,29 @@ async function fetchAll(searchTerm, fileConfig) {
     console.log('gbifCountsByDate=>fetchAll | All: ', all)
     if (all && null != all) {return Promise.resolve(all);} else {
     */
-    let all = Promise.all(urls.map(url => fetch(encodeURI(url))))
+    let all = Promise.all(urls.map(url=>fetch(encodeURI(url))))
         .then(responses => {
-            //console.log(`gbifCountsByDate::fetchAll(${searchTerm}) RAW RESULT:`, responses);
+            //console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) RAW RESULT:`, responses);
             //Convert each response to json object
+            /*
             return Promise.all(responses.map(async res => {
                 let json = await res.json();
-                console.log(`gbifCountsByDate::fetchAll(${searchTerm}) JSON RESULT FOR URL:`, res.url, json);
+                console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) JSON RESULT FOR URL:`, res.url, json);
                 return json;
             }));
+            */
+            return Promise.all(responses.map(raw => raw.json())) //return array of JSON results
+                .then(json => {
+                    console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) JSON RESULT FOR URL:`, json.url, json);
+                    return json;
+                })
+                .catch(err => {
+                    console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) JSON ERROR FOR URL:`, err.url, err);
+                    throw new Error(err);
+                })
         })
         .then(arrj => {
-            //console.log(`gbifCountsByDate::fetchAll(${searchTerm}) ALL JSON RESULT:`, arrj);
+            console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) ALL JSON RESULT:`, arrj);
             let total = 0, max = 0, min = 7000000000000, sum = {}, counts = [];
             arrj.forEach(json => {
                 //console.log('json', json);
@@ -75,11 +86,11 @@ async function fetchAll(searchTerm, fileConfig) {
                     });
                     //console.log('sum', sum);
                 } else {
-                    console.log(`gbifCountsByDate::fetchAll NO Facets Returned`, json.facets);
+                    console.log(`gbifCountsByDate=>fetchAll NO Facets Returned`, json.facets);
                 }
             });
             for (const [key, val] of Object.entries(sum)) {
-                //console.log('gbifCountsByDate::fetchAll | sum entries', key, val);
+                //console.log('gbifCountsByDate=>fetchAll | sum entries', key, val);
                 let d = Number(key);
                 let o = {'date':d, 'count':val};
                 max = d > max ? d : max;
@@ -94,13 +105,13 @@ async function fetchAll(searchTerm, fileConfig) {
             return res;
         })
         .catch(err => {
-            console.log(`ERROR fetchAll ERROR:`, err);
+            console.log(`gbifCountsByDate=>fetchAll Raw Response ERROR:`, err);
+            throw new Error(err);
             //return Promise.reject(new Error(err)); //this works too, but not needed
-            return new Error(err);
+            //return new Error(err);
         })
-        console.log(`fetchAll promise.all`, all);
-        return all; //this is how it's done. strange errors when not.
-    //}
+    console.log(`gbifCountsByDate=>fetchAll promise.all`, all);
+    return all; //this is how it's done. strange errors when not.
 }
 
 export async function gbifCountsByDateByTaxonKey(taxonKey, fileConfig) {
