@@ -3,6 +3,7 @@ import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../../VAL_Web_Util
 const facetQuery = '&facet=year&facetLimit=1200000&limit=0';
 let searchTerm;
 let exploreUrl;
+let target = '_self'; //window.open setting, see https://developer.mozilla.org/en-US/docs/Web/API/Window/open
 
 /*
 GBIF occurrence counts by year:
@@ -219,7 +220,7 @@ function gbifCountsByYear(data, htmlId) {
         let url = `${exploreUrl}?${searchTerm}&gbif-year=${d.name}&view=TABLE`;
         console.log('gbifCountsByYear=>handleClick', url);
         if (exploreUrl && searchTerm) {
-            window.open(url);
+            window.open(url, target); //https://developer.mozilla.org/en-US/docs/Web/API/Window/open
         }
     }
 }
