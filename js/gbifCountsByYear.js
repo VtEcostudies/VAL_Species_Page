@@ -94,31 +94,30 @@ function fetchAll(searchTerm, fileConfig) {
     console.log(`fetchAll promise.all`, all);
     return all; //this is how it's done. strange errors when not.
 }
-export async function gbifCountsByYearByTaxonName(taxonName, taxonRank, htmlId, fileConfig) {
+export async function gbifCountsByYearByTaxonName(taxonName, taxonRank, htmlId, fileConfig, siteName) {
     let taxonKey = await getGbifTaxonKeyFromName(taxonName, taxonRank);
     if (taxonKey) {
-        gbifCountsByYearByTaxonKey(taxonKey, htmlId, fileConfig);
+        gbifCountsByYearByTaxonKey(taxonKey, htmlId, fileConfig, siteName);
     } else {
         fetchAllByName(taxonName, fileConfig)
         .then(data => {
-            gbifCountsByYear(data, htmlId);
+            gbifCountsByYear(data, htmlId, siteName);
         })
         .catch(err => {
-            console.log(`ERROR gbifCountsByYearByTaxonName ERROR: `, err);
+            console.log(`ERROR gbifCountsByYearByTaxonName: `, err);
         }) 
     }
 }
-export async function gbifCountsByYearByTaxonKey(taxonKey, htmlId, fileConfig) {
+export async function gbifCountsByYearByTaxonKey(taxonKey, htmlId, fileConfig, siteName) {
     fetchAllByKey(taxonKey, fileConfig)
     .then(data => {
-        gbifCountsByYear(data, htmlId);
+        gbifCountsByYear(data, htmlId, siteName);
     })
     .catch(err => {
-        console.log(`ERROR export async function gbifCountsByYearByTaxonKey(taxonKey, htmlId, fileConfig) {
-            ERROR: `, err);
+        console.log(`ERROR gbifCountsByYearByTaxonKey:`, err);
     }) 
 }
-function gbifCountsByYear(data, htmlId) {
+function gbifCountsByYear(data, htmlId, siteName) {
     // set dimensions and margins of the graph
     let yMax = d3.max(data.counts, d => d.count);
     var margin = {top: 15, right: 30, bottom: 30, left: 30 + (String(yMax).length-3)*7};
@@ -217,7 +216,7 @@ function gbifCountsByYear(data, htmlId) {
     function handleClick(event, d) {
         //recall that Wordpress reserves the query parameter 'year'. We end-run around that by using param gbif-year
         //which is converted to 'year' within our gbif data widget implementation.
-        let url = `${exploreUrl}?${searchTerm}&gbif-year=${d.name}&view=TABLE`;
+        let url = `${exploreUrl}?siteName=${siteName}&${searchTerm}&gbif-year=${d.name}&view=TABLE`;
         console.log('gbifCountsByYear=>handleClick', url);
         if (exploreUrl && searchTerm) {
             window.open(url, target); //https://developer.mozilla.org/en-US/docs/Web/API/Window/open

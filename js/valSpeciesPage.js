@@ -21,9 +21,12 @@ import(siteConfig).then(file => {
 })
 
 var gbifInfo = false; //gbif occurrence query promise shared to handle in multiple sections
-var siteName = false;
 var profileUrl = false;
 var inatWiki = false;
+var siteName = false;
+//const pageUrl = new URL(document.URL);
+//const objUrlParams = pageUrl.searchParams; //get URL search params from calling http route address
+//var siteName = await getSite(pageUrl);
 
 startUp();
 
@@ -126,9 +129,9 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
         let Lmon = (gbif.max > 0) ? moment.utc(gbif.max).format("M") : '';
         let Lyer = (gbif.max > 0) ? moment.utc(gbif.max).format("YYYY") : '';
         let Ldat = (gbif.max > 0) ? moment.utc(gbif.max).format("YYYY-MM-DD") : '';
-        eleRecs.innerHTML = `&nbsp<a href="${exploreUrl}?${gbif.search}&view=MAP">${nFmt.format(gbif.total)}</a>`;
-        eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?${gbif.search}&gbif-year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
-        eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?${gbif.search}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
+        eleRecs.innerHTML = `&nbsp<a href="${exploreUrl}?siteName=${siteName}&${gbif.search}&view=MAP">${nFmt.format(gbif.total)}</a>`;
+        eleFrst.innerHTML = `&nbsp<a href="${exploreUrl}?siteName=${siteName}&${gbif.search}&gbif-year=${Fyer}&month=${Fmon}&view=TABLE">${Frst}</a>`
+        eleLast.innerHTML = `&nbsp<a href="${exploreUrl}?siteName=${siteName}&${gbif.search}&gbif-year=${Lyer}&month=${Lmon}&view=TABLE">${Last}</a>`
     });
     let inat; try {inat = await getInatSpecies(taxonName, taxonObj.rank, taxonObj.parent, getParentRank(taxonObj.rank));} catch(err) {inat={};}
     if (!wikiName && inat.wikipedia_url) {
@@ -349,8 +352,8 @@ function fillPageItems(fileConfig, taxonKey, taxonName, taxonObj, wikiName) {
     //gbifPhenologyByTaxonKeys(taxonKeyA=[], columnA=[], geoSearchA=[], objHtmlIds={tblId:false, ttlId:false}, objSort, objTitle
     //gbifPhenologyByTaxonNames([taxonName], [], fileConfig.predicateToQueries(fileConfig.dataConfig.rootPredicate, true));
     //gbifD3PhenologyByTaxonName(taxonName, 'speciesCountsByWeek', fileConfig);
-    gbifD3PhenologyByTaxonKey(taxonKey, 'speciesCountsByWeek', fileConfig);
-    gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig);
+    gbifD3PhenologyByTaxonKey(taxonKey, 'speciesCountsByWeek', fileConfig, siteName);
+    gbifCountsByYearByTaxonKey(taxonKey, 'speciesCountsByYear', fileConfig, siteName);
     inatTaxonObsDonut(taxonName, taxonObj.rank, taxonObj.parent, 'inatTaxonObsDonut', fileConfig.dataConfig.inatProject);
     if ('val' == siteName) {
         getDistribution(taxonName, 'speciesDistribution', 'speciesDistMissing', fileConfig);
