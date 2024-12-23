@@ -2,7 +2,6 @@ import { getDistribution } from './valDistSuitMap.js'
 import { gbifCountsByYearByTaxonKey, gbifCountsByYearByTaxonName } from './gbifCountsByYear.js'
 import { gbifCountsByMonthByTaxonKey, gbifCountsByMonthByTaxonName } from './gbifCountsByMonth.js'
 import { gbifCountsByDateByTaxonKey, gbifCountsByDateByTaxonName } from './gbifCountsByDate.js';
-import { getStoredConservationStatus } from '../../VAL_Web_Utilities/js/fetchGoogleSheetsData.js';
 import { getGbifSynonymsByHigherTaxonKey, getGbifSynonymsFromKey } from '../../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { getWikiHtmlPage, getWikiSummary } from '../../VAL_Web_Utilities/js/wikiPageData.js';
 import { getInatSpecies } from '../../VAL_Web_Utilities/js/inatSpeciesData.js';
@@ -11,6 +10,13 @@ import { inatTaxonObsDonut } from '../../VAL_Web_Utilities/js/inatTaxonObservati
 import { getGbifTaxonKeyFromName, findListTaxonByNameAndRank, getGbifTaxonFromKey, getGbifVernacularsFromKey, getParentRank, parseNameToRank } from '../../VAL_Web_Utilities/js/fetchGbifSpecies.js';
 import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../../VAL_Web_Utilities/js/gbifPhenologyModule.js';
 import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';
+import { getStoredConservationStatus } from '../../VAL_Web_Utilities/js/fetchGoogleSheetsData.js';
+/*
+let getStoredConservationStatus;
+import('../../VAL_Web_Utilities/js/fetchGoogleSheetsData.js').then(file => {
+    getStoredConservationStatus = file.getStoredConservationStatus;
+}).catch(err => {console.log('Dynamic import of fetchGoogleSheetsData ERROR', err)})
+*/
 let siteNames = [];
 let siteConfig = '../VAL_Data_Explorers/js/gbifSiteConfig.js';
 import(siteConfig).then(file => {
