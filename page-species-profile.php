@@ -50,18 +50,16 @@
             <div class="col-lg-6">
                 <div class="row">
                     <div class="col-lg-6" id="divTopStats" class="speciesStats">
-                        <div class="speciesStatsBlock">
-                            <label class="speciesStatsLabel"><b>S-Rank:</b></label>
-                            <label id="srank" class="speciesStatsValue"></label>
-                            <label id="sgcn" class="speciesStatsValue"></label>
-                        </div>
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>S-Rank:</b></label><label id="srank" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>SGCN:</b></label><label id="sgcn" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>G-Rank:</b></label><label id="grank" class="speciesStatsValue"></label></div>
                         <div class="speciesStatsBlock"><label class="speciesStatsLabel"><b>IUCN:</b></label><label id="iucn" class="speciesStatsValue"></label></div>
-                        <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="teLbl">VT List:</label></b><label id="TndE" class="speciesStatsValue"></label></div>
                     </div>
                     <div class="col-lg-6" id="divTopStats" class="speciesStats">
                         <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="vtLbl">Vermont Records:</label></b><label id="vtRec" class="speciesStatsValue"></label></div>
                         <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="fsLbl">First VT Record:</label></b><label id="fsRec" class="speciesStatsValue"></label></div>
                         <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="lsLbl">Last VT Record:</label></b><label id="lsRec" class="speciesStatsValue"></label></div>
+                        <div class="speciesStatsBlock"><b><label class="speciesStatsLabel" id="teLbl">VT List:</label></b><label id="TndE" class="speciesStatsValue"></label></div>
                     </div>
                 </div>
                 <div class="row taxonDetailBottom">

@@ -11,6 +11,8 @@ import { getGbifTaxonKeyFromName, findListTaxonByNameAndRank, getGbifTaxonFromKe
 import { gbifPhenologyByTaxonKeys, gbifPhenologyByTaxonNames } from '../../VAL_Web_Utilities/js/gbifPhenologyModule.js';
 import { gbifD3PhenologyByTaxonName, gbifD3PhenologyByTaxonKey } from '../../VAL_Web_Utilities/js/gbifD3PhenologyByWeek.js';
 import { getStoredConservationStatus } from '../../VAL_Web_Utilities/js/fetchGoogleSheetsData.js';
+import { getStoredNatureServeRanks } from '../../VAL_Web_Utilities/js/fetchNatureServeData.js';
+import { getStoredTnEListCsv } from '../../VAL_Web_Utilities/js/fetchTnEListCsv.js';
 /*
 let getStoredConservationStatus;
 import('../../VAL_Web_Utilities/js/fetchGoogleSheetsData.js').then(file => {
@@ -54,6 +56,7 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
 
     let eleComn = document.getElementById("common");
     let eleTaxn = document.getElementById("taxon");
+    let eleGrnk = document.getElementById("grank");
     let eleSrnk = document.getElementById("srank");
     let eleSgcn = document.getElementById("sgcn");
     let eleIucn = document.getElementById("iucn");
@@ -68,6 +71,7 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     let eleMore = document.getElementById("wikiPageHtml");
     let htmlWait = `&nbsp<i class="fa fa-spinner fa-spin" style="font-size:18px"></i>`;
     eleTaxn.innerHTML = `${taxonObj.rank ? taxonObj.rank : ''} <u>${taxonName}</u> (${taxonObj.taxonomicStatus})`;
+    if (eleGrnk) {eleGrnk.innerHTML = htmlWait;}
     eleSrnk.innerHTML = htmlWait;
     eleIucn.innerHTML = htmlWait;
     eleTndE.innerHTML = htmlWait;
@@ -99,18 +103,79 @@ async function fillTaxonStats(fileConfig, taxonKey, taxonName, taxonObj, wikiNam
     eleTndE.style.display = fileConfig.dataConfig.atlasAdmin ? eleTndE.style.display : 'none'; //value
     elelTnE.innerText = `${fileConfig.dataConfig.atlasAdmin} List:`;
     console.log('conservationStatusName', dataConfig.conservationStatusName, dataConfig);
-    let shtInfo = getStoredConservationStatus(dataConfig.conservationStatusName);
-    shtInfo.then(sheetSranks => {
+    // G-Rank and S-Rank from NatureServe Explorer API (driven by dataConfig.natureServeSubnation)
+    let subnation = dataConfig.natureServeSubnation;
+    if (subnation) {
+        console.log(`S-Rank source: NatureServe Explorer API (subnation=${subnation}) for ${taxonName}`);
+        getStoredNatureServeRanks(taxonName, subnation).then(ranks => {
+            console.log('NatureServe ranks', taxonName, ranks);
+            const sRankVal = (ranks && ranks.roundedSRank) || 'N/A';
+            const gRankVal = (ranks && (ranks.roundedGRank || ranks.gRank)) || 'N/A';
+            console.log(`S-Rank from NatureServe for ${taxonName}: ${sRankVal} (G-Rank: ${gRankVal})`);
+            if (eleGrnk) {eleGrnk.innerHTML = '&nbsp' + gRankVal;}
+            eleSrnk.innerHTML = '&nbsp' + sRankVal;
+        }).catch(err => {
+            console.error('getStoredNatureServeRanks ERROR', err);
+            if (eleGrnk) {eleGrnk.innerHTML = '&nbspN/A';}
+            eleSrnk.innerHTML = '&nbspN/A';
+        });
+    } else {
+        console.log(`S-Rank source: NONE (dataConfig.natureServeSubnation is not set) for ${taxonName}`);
+        if (eleGrnk) {eleGrnk.innerHTML = '&nbspN/A';}
+        eleSrnk.innerHTML = '&nbspN/A';
+    }
+    if ('statusMVAL'==dataConfig.conservationStatusName) {
+        // MVAL hack: MESA reports 'SC' (Special Concern) alongside T/E. T&E + SGCN still sourced from Google Sheets.
+        let shtInfo = getStoredConservationStatus(dataConfig.conservationStatusName);
+        shtInfo.then(sheetSranks => {
             let ssr = sheetSranks[taxonName] ? sheetSranks[taxonName] : false;
-            console.log('conservationStatus result', taxonName, ssr);
+            console.log('conservationStatus result (MVAL)', taxonName, ssr);
+            let tne = (ssr ? (ssr.TandE ? ssr.TandE : false) : false);
+            eleSgcn.innerHTML = (ssr ? (ssr.SGCN ? `&nbsp~&nbsp${ssr.SGCN}` : '') : '');
+            eleTndE.innerHTML = '&nbsp' + (tne === 'T' ? 'Threatened' : (tne === 'E' ? 'Endangered' : (tne === 'SC' ? 'Special Concern' : 'N/A')));
+        });
+    } else {
+        // T&E from site-configured CSV (see dataConfig.tneListPath)
+        if (dataConfig.tneListPath) {
+            console.log(`T&E source: ${dataConfig.tneListPath} for ${taxonName}`);
+            getStoredTnEListCsv(dataConfig.tneListPath).then(list => {
+                let row = list[taxonName] || false;
+                console.log('T&E CSV result', taxonName, row);
+                let tne = row ? (row['State Status'] || '').charAt(0).toUpperCase() : '';
+                eleTndE.innerHTML = '&nbsp' + (tne === 'T' ? 'Threatened' : (tne === 'E' ? 'Endangered' : 'N/A'));
+            }).catch(err => {
+                console.error('getStoredTnEListCsv ERROR', err);
+                eleTndE.innerHTML = '&nbspN/A';
+            });
+        } else {
+            eleTndE.innerHTML = '&nbspN/A';
+        }
+        // SGCN from site-configured CSV (see dataConfig.sgcnListPath), keyed on scientificName
+        if (dataConfig.sgcnListPath) {
+            console.log(`SGCN source: ${dataConfig.sgcnListPath} for ${taxonName}`);
+            getStoredTnEListCsv(dataConfig.sgcnListPath, 'scientificName').then(list => {
+                let row = list[taxonName] || false;
+                console.log('SGCN CSV result', taxonName, row);
+                let sgcn = row ? (row['VT_SGCN'] || '').trim() : '';
+                eleSgcn.innerHTML = '&nbsp' + (sgcn || 'N/A');
+            }).catch(err => {
+                console.error('getStoredTnEListCsv (SGCN) ERROR', err);
+                eleSgcn.innerHTML = '';
+            });
+        } else {
+            eleSgcn.innerHTML = '';
+        }
+        /* Former Google Sheets source for S-Rank / SGCN / T&E — retained for reference.
+        let shtInfo = getStoredConservationStatus(dataConfig.conservationStatusName);
+        shtInfo.then(sheetSranks => {
+            let ssr = sheetSranks[taxonName] ? sheetSranks[taxonName] : false;
             let tne = (ssr ? (ssr.TandE ? ssr.TandE : false) : false);
             eleSrnk.innerHTML = '&nbsp' + (ssr ? (ssr.S_RANK ? ssr.S_RANK : 'N/A') : 'N/A');
-            if ('statusMVAL'==dataConfig.conservationStatusName) { //this is a hack for the MVAL site - MESA puts 'SC' with State T & E
-                eleSrnk.innerHTML = (ssr ? ('SC' == ssr.TandE ? ssr.TandE : 'N/A') : 'N/A');
-            }
             eleSgcn.innerHTML = (ssr ? (ssr.SGCN ? `&nbsp~&nbsp${ssr.SGCN}` : '') : '');
             eleTndE.innerHTML = '&nbsp' + (tne ? ('T'==tne ? 'Threatened' : ('E'==tne ? 'Endangered' : 'N/A')) : 'N/A');
-        })
+        });
+        */
+    }
     if (taxonObj.accepted) { //there is an 'accepted' value, so we're showing a synonym
         eleTaxn.innerHTML += ` => <a href="${profileUrl}?siteName=${siteName}&taxonKey=${taxonObj.acceptedKey}">${taxonObj.accepted}</a> (ACCEPTED)`;
     }
