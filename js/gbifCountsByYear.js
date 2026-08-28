@@ -1,7 +1,9 @@
 import { getListSubTaxonKeys, getNubKey } from "../../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
-import { gbifFetchJson } from "../../VAL_Web_Utilities/js/gbifFetch.js";
+import { occQuery } from "../../VAL_Web_Utilities/js/gbifOccQuery.js";
 import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../../VAL_Web_Utilities/js/fetchGbifSpecies.js";
-const facetQuery = '&facet=year&facetLimit=1200000&limit=0';
+const FACET_ARGS = 'facetLimit=1200000';
+const VT_SCOPE = ['gadmGid=USA.46_1', 'stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false'];
+
 let searchTerm;
 let exploreUrl;
 let target = '_self'; //window.open setting, see https://developer.mozilla.org/en-US/docs/Web/API/Window/open
@@ -34,60 +36,26 @@ async function fetchAllByName(taxonName, fileConfig) {
     searchTerm = `scientificName=${taxonName}`; exploreUrl = fileConfig.dataConfig.exploreUrl;
     return await fetchAll(`scientificName=${taxonName}`, fileConfig);
 }
-function fetchAll(searchTerm, fileConfig) {
-    let qrys = [];
-    if (fileConfig) {
-        //For Atlas query filters defined by taxa, since searchTerm is a taxon, remove Atlas query taxon filters
-        qrys = fileConfig.predicateToQueries(fileConfig.dataConfig.rootPredicate, true);
+/*
+    occQuery does the scope expansion, the fetching, the rate-limit handling, the merge across scope
+    queries and the daily cache - see gbifOccQuery.js. All that is left here is the year arithmetic.
+    dropScopeTaxa because searchTerm IS the taxon: an atlas scoped by taxonomy would otherwise OR
+    its own taxon filters with ours and widen the query instead of narrowing it.
+
+    Throwing when a scope query goes unanswered matches what Promise.all did before, and keeps a
+    chart from quietly drawing a partial year.
+*/
+async function fetchAll(searchTerm, fileConfig) {
+    const res = await occQuery(fileConfig, {search:searchTerm, facet:'year', facetArgs:FACET_ARGS,
+                                            dropScopeTaxa:true, scope: fileConfig ? null : VT_SCOPE});
+    if (res.missed) {throw new Error(`gbifCountsByYear: ${res.missed} of ${res.queries.length} queries unanswered`);}
+    let max = 0, counts = [];
+    for (const [year, val] of Object.entries(res.counts)) {
+        max = val > max ? val : max;
+        counts.push({'name':Number(year), 'count':val});
     }
-    let urls = [];
-    if (qrys.length) {
-        for (const qry of qrys) {
-            urls.push(`${fileConfig.dataConfig.gbifApi}/occurrence/search?${qry}&${searchTerm}${facetQuery}`);
-        }
-        console.log(`gbifCountsByYear.js | ${fileConfig.dataConfig.atlasAbbrev} api urls:`, urls);
-    } else {
-        urls = [
-        `https://api.gbif.org/v1/occurrence/search?gadmGid=USA.46_1&${searchTerm}&facet=year&facetLimit=1200000&limit=0`,
-        `https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false&${searchTerm}&facet=year&facetLimit=1200000&limit=0`
-        ]
-    }
-    //gbifFetchJson queues behind the shared limiter and retries GBIF's 429s, handing back parsed
-    //JSON only for a genuinely OK response. Reading a rate-limit body as data is what produced NaN.
-    let all = Promise.all(urls.map(url => gbifFetchJson(encodeURI(url))))
-        .then(arrj => {
-            //console.log(`gbifCountsByYear::fetchAll(${searchTerm}) ALL JSON RESULT:`, arrj);
-            let total = 0, max = 0, sum={}, counts = [];
-            arrj.forEach(json => {
-                //console.log('json', json);
-                if (Number.isFinite(json.count)) {total += json.count;}
-                if (json.facets && json.facets[0]) {
-                    json.facets[0].counts.map(count => {
-                        let midx = Number(count.name); //convert facet name (year) to number
-                        sum[midx] = sum[midx] ? sum[midx] + count.count : count.count;
-                    });
-                    //console.log('sum', sum);
-                } else {
-                    console.log(`gbifCountsByYear::fetchAll NO Facets Returned`, json.facets);
-                }
-            });
-            for (const [key, val] of Object.entries(sum)) {
-                //console.log('gbifCountsByYear::fetchAll | sum entries', key, val);
-                let o = {'name':Number(key), 'count':val};
-                max = val > max ? val : max;
-                counts.push(o);
-            }
-            //console.log('GBIF counts by year sorted by count:', counts);
-            counts.sort((a,b) => {return a.index > b.index;})
-            //console.log('GBIF counts by year sorted by year:', counts);
-            return {total:total, max:max, counts:counts};
-        })
-        .catch(err => {
-            console.log(`ERROR fetchAll ERROR:`, err);
-            return Promise.reject({'message':err.message});
-        })
-    console.log(`fetchAll promise.all`, all);
-    return all; //this is how it's done. strange errors when not.
+    counts.sort((a,b) => {return a.index > b.index;})
+    return {total:res.total, max:max, counts:counts};
 }
 export async function gbifCountsByYearByTaxonName(taxonName, taxonRank, htmlId, fileConfig, siteName) {
     let taxonKey = await getGbifTaxonKeyFromName(taxonName, taxonRank);
