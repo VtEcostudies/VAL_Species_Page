@@ -1,4 +1,5 @@
-import { getListSubTaxonKeys } from "../../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
+import { getListSubTaxonKeys, getNubKey } from "../../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
+import { gbifFetchJson } from "../../VAL_Web_Utilities/js/gbifFetch.js";
 import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 import { getStoredData, setStoredData, getSetStoredData } from "../../VAL_Web_Utilities/js/storedData.js";
 const facetQuery = '&facet=eventDate&facetLimit=1190000&limit=0';
@@ -11,7 +12,8 @@ https://api.gbif.org/v1/occurrence/search?stateProvince=vermont&hasCoordinate=fa
 */
 async function fetchAllByKey(taxonKey, fileConfig) {
     let self = await getGbifTaxonFromKey(taxonKey); //retrieve species info for species-list taxonKey - to get nubKey for below
-    let srch = `taxonKey=${self.nubKey ? self.nubKey : taxonKey}`;
+    let nub = await getNubKey(self); //WORKAROUND: self.nubKey is null for most kingdoms since the COL XR republication. See gbifOccFacetCounts.js.
+    let srch = `taxonKey=${nub ? nub : taxonKey}`;
     let subs = {keys:[]};
     if (fileConfig.dataConfig.drillRanks.includes(self.rank)) { //only drill-down lower ranks
         subs = await getListSubTaxonKeys(fileConfig, taxonKey); //get sub-nubKeys of species-list key
@@ -19,12 +21,12 @@ async function fetchAllByKey(taxonKey, fileConfig) {
             srch += `&taxonKey=${key}`; //add sub-nubKeys to searchTerm to be used by fetchAll
         }
     }
-    console.log(`gbifCountsByDateByTaxonKey(${taxonKey}) | self-nubKey:`, self.nubKey, 'sub-nubKeys:', subs.keys, 'searchTerm:', srch);
+    console.log(`gbifCountsByDateByTaxonKey(${taxonKey}) | self-nubKey:`, nub, 'sub-nubKeys:', subs.keys, 'searchTerm:', srch);
     
     let res = await fetchAll(srch, fileConfig);
     console.log(res);
-    res.nubKey = self.nubKey;
-    res.keys = subs.keys.push(self.nubKey); //add self nubKey to array of keys for species-list key
+    res.nubKey = nub;
+    res.keys = subs.keys.push(nub); //add self nubKey to array of keys for species-list key
     res.names = subs.names;
     res.search = srch; //return our enhanced searchTerm for caller to use
     return res;
@@ -52,34 +54,16 @@ async function fetchAll(searchTerm, fileConfig) {
     console.log('gbifCountsByDate=>fetchAll | All: ', all)
     if (all && null != all) {return Promise.resolve(all);} else {
     */
-    let all = Promise.all(urls.map(url=>fetch(encodeURI(url))))
-        .then(responses => {
-            //console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) RAW RESULT:`, responses);
-            //Convert each response to json object
-            /*
-            return Promise.all(responses.map(async res => {
-                let json = await res.json();
-                console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) JSON RESULT FOR URL:`, res.url, json);
-                return json;
-            }));
-            */
-            return Promise.all(responses.map(raw => raw.json())) //return array of JSON results
-                .then(json => {
-                    console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) JSON RESULT FOR URL:`, json.url, json);
-                    return json;
-                })
-                .catch(err => {
-                    console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) JSON ERROR FOR URL:`, err.url, err);
-                    throw new Error(err);
-                })
-        })
+    //gbifFetchJson queues behind the shared limiter and retries GBIF's 429s, handing back parsed
+    //JSON only for a genuinely OK response. Reading a rate-limit body as data is what produced NaN.
+    let all = Promise.all(urls.map(url => gbifFetchJson(encodeURI(url))))
         .then(arrj => {
             console.log(`gbifCountsByDate=>fetchAll(${searchTerm}) ALL JSON RESULT:`, arrj);
             let total = 0, max = 0, min = 7000000000000, sum = {}, counts = [];
             arrj.forEach(json => {
                 //console.log('json', json);
-                total += json.count;
-                if (json.facets[0]) {
+                if (Number.isFinite(json.count)) {total += json.count;}
+                if (json.facets && json.facets[0]) {
                     json.facets[0].counts.map(count => {
                         let date = Date.parse(count.name); //convert facet name (eventDate) to date
                         sum[date] = sum[date] ? sum[date] + count.count : count.count;
