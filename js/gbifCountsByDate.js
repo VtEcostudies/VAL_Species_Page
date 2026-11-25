@@ -2,7 +2,7 @@ import { getDrillSubTaxonKeys, getNubKey } from "../../VAL_Web_Utilities/js/gbif
 import { occQuery } from "../../VAL_Web_Utilities/js/gbifOccQuery.js";
 import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 import { getStoredData, setStoredData, getSetStoredData } from "../../VAL_Web_Utilities/js/storedData.js";
-const FACET_ARGS = 'facetLimit=1190000';
+const FACET_ARGS = 'facetLimit=1200000'; //same as the weekly phenology chart, so the two share one eventDate query and one cache entry
 const VT_SCOPE = ['gadmGid=USA.46_1', 'stateProvince=vermont&stateProvince=vermont (State)&hasCoordinate=false'];
 
 const drillRanks = ['GENUS','SPECIES','SUBSPECIES','VARIETY'];
