@@ -1,4 +1,4 @@
-import { getListSubTaxonKeys, getNubKey } from "../../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
+import { getDrillSubTaxonKeys, getNubKey } from "../../VAL_Web_Utilities/js/gbifOccFacetCounts.js";
 import { occQuery } from "../../VAL_Web_Utilities/js/gbifOccQuery.js";
 import { getGbifTaxonKeyFromName, getGbifTaxonFromKey } from "../../VAL_Web_Utilities/js/fetchGbifSpecies.js";
 import { getStoredData, setStoredData, getSetStoredData } from "../../VAL_Web_Utilities/js/storedData.js";
@@ -17,11 +17,9 @@ async function fetchAllByKey(taxonKey, fileConfig) {
     let nub = await getNubKey(self); //WORKAROUND: self.nubKey is null for most kingdoms since the COL XR republication. See gbifOccFacetCounts.js.
     let srch = `taxonKey=${nub ? nub : taxonKey}`;
     let subs = {keys:[]};
-    if (fileConfig.dataConfig.drillRanks.includes(self.rank)) { //only drill-down lower ranks
-        subs = await getListSubTaxonKeys(fileConfig, taxonKey); //get sub-nubKeys of species-list key
-        for (const key of subs.keys) {
-            srch += `&taxonKey=${key}`; //add sub-nubKeys to searchTerm to be used by fetchAll
-        }
+    subs = await getDrillSubTaxonKeys(fileConfig, self, nub); //empty unless this taxon needs a drill-down - see gbifOccFacetCounts.js
+    for (const key of subs.keys) {
+        srch += `&taxonKey=${key}`; //add sub-nubKeys to searchTerm to be used by fetchAll
     }
     console.log(`gbifCountsByDateByTaxonKey(${taxonKey}) | self-nubKey:`, nub, 'sub-nubKeys:', subs.keys, 'searchTerm:', srch);
     
